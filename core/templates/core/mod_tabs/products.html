@@ -1,94 +1,271 @@
-<!-- TAB: PRODUCTS -->
-<div id="tab-products" class="tab-content flex-grow flex flex-col">
-    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
-        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Marketplace Listings</span>
+<!-- TAB: CATALOG MANAGEMENT & APPROVALS -->
+<div id="tab-products" class="tab-content hidden flex-grow flex flex-col p-4 lg:p-8 space-y-6 animate-fade-in max-w-7xl mx-auto w-full">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-market-border pb-6 shrink-0">
+        <div>
+            <h1 class="text-lg lg:text-xl font-bold uppercase tracking-[0.2em] text-market-accent">Catalog Governance & Approvals</h1>
+            <p class="text-xs text-market-muted tracking-wider mt-1">Review pending listings, manage active inventory, and enforce marketplace standards</p>
+        </div>
+        <div class="flex gap-2 bg-market-surface p-1.5 rounded-lg border border-market-border shrink-0">
+            <button onclick="switchModCatalogTab('pending')" id="mod-cat-btn-pending" class="mod-cat-btn active px-4 py-2 rounded text-xs uppercase tracking-widest font-bold bg-market-sys text-white shadow">
+                Pending ({{ pending_products.count }})
+            </button>
+            <button onclick="switchModCatalogTab('approved')" id="mod-cat-btn-approved" class="mod-cat-btn px-4 py-2 rounded text-xs uppercase tracking-widest font-bold text-market-muted hover:text-market-text transition-all">
+                Recently Approved
+            </button>
+            <button onclick="switchModCatalogTab('all')" id="mod-cat-btn-all" class="mod-cat-btn px-4 py-2 rounded text-xs uppercase tracking-widest font-bold text-market-muted hover:text-market-text transition-all">
+                All Catalog
+            </button>
+        </div>
     </div>
 
-    <div class="flex-grow overflow-auto">
-        <table class="market-table min-w-[1000px]">
-            <thead>
-                <tr>
-                    <th class="pl-6">ID</th>
-                    <th>Product Asset</th>
-                    <th>Category</th>
-                    <th>Vendor</th>
-                    <th>Price</th>
-                    <th>Views</th>
-                    <th class="text-right pr-6">Directives</th>
-                </tr>
-            </thead>
-            <tbody class="text-[12px] text-market-text">
-                {% for p in products %}
-                <tr class="hover:bg-market-surface/50 transition-colors">
-                    <td class="pl-6 font-mono text-market-muted">#{{ p.id }}</td>
-                    <td>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 border border-market-border bg-market-bg flex-shrink-0">
-                                {% if p.image %}
-                                <img src="{{ p.image.url }}" class="w-full h-full object-cover grayscale">
-                                {% endif %}
-                            </div>
-                            <span class="font-medium">{{ p.name }}</span>
+    <!-- SUB-TAB: PENDING APPROVALS -->
+    <div id="mod-catalog-pending" class="mod-catalog-view space-y-6">
+        <div class="bg-market-sysBg border border-market-sys/30 p-4 rounded-xl flex items-center gap-3 shadow">
+            <div class="w-8 h-8 bg-market-sys/20 flex items-center justify-center rounded-full shrink-0 border border-market-sys/40 animate-pulse">
+                <svg class="w-4 h-4 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <p class="text-xs text-market-muted"><strong class="text-market-text">Evaluation Queue:</strong> Items below have been submitted by vendors and await moderation clearance before public indexing.</p>
+        </div>
+
+        <div class="space-y-4">
+            {% for p in pending_products %}
+            <div class="bg-market-surface border border-market-border rounded-xl p-6 flex flex-col md:flex-row justify-between gap-6 shadow-lg">
+                <div class="space-y-4 flex-grow">
+                    <div class="flex flex-wrap items-center gap-3 border-b border-market-border/50 pb-3">
+                        <span class="font-mono text-xs text-market-muted">#{{ p.id }}</span>
+                        <a href="{% url 'product_detail' p.id %}" target="_blank" class="font-bold text-base text-market-accent hover:underline">{{ p.name }}</a>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-market-bg border border-market-border text-market-muted">{{ p.get_product_type_display }}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-market-bg border border-market-border text-market-muted">{{ p.category.name }}</span>
+                        <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-market-sysBg text-market-sys border border-market-sys/30 animate-pulse">Pending Review</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs bg-market-bg p-4 rounded-xl border border-market-border">
+                        <div><span class="text-market-muted block text-[10px] uppercase tracking-wider mb-0.5">Vendor</span><strong class="text-market-text">{{ p.vendor.username }}</strong></div>
+                        <div><span class="text-market-muted block text-[10px] uppercase tracking-wider mb-0.5">Price (XMR)</span><strong class="text-market-accent">{{ p.price_xmr }} XMR</strong></div>
+                        <div><span class="text-market-muted block text-[10px] uppercase tracking-wider mb-0.5">Submitted At</span><strong class="text-market-text">{{ p.created_at|date:"M d, Y H:i" }}</strong></div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-market-text uppercase tracking-widest block">Public Description:</span>
+                        <p class="text-xs text-market-muted bg-market-bg p-4 rounded-lg border border-market-border leading-relaxed whitespace-pre-wrap">{{ p.description }}</p>
+                    </div>
+
+                    {% if p.digital_content or p.usage_instructions %}
+                    <div class="space-y-2 bg-market-surfaceHover p-4 rounded-lg border border-market-border">
+                        <span class="text-xs font-bold text-market-sys uppercase tracking-widest block">Protected Asset Data (Moderator Inspection):</span>
+                        {% if p.digital_content %}<div class="font-mono text-xs text-market-text"><strong class="text-market-muted">Digital Content:</strong> {{ p.digital_content }}</div>{% endif %}
+                        {% if p.usage_instructions %}<div class="text-xs text-market-text"><strong class="text-market-muted">Instructions:</strong> {{ p.usage_instructions }}</div>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center shrink-0">
+                    <form action="{% url 'mod_manage_product' p.id %}" method="POST" class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+                        {% csrf_token %}
+                        <input type="text" name="notes" placeholder="Reason for rejection/fix..." class="bg-market-bg border border-market-border rounded px-3 py-2 text-xs text-market-text outline-none focus:border-market-sys">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="submit" name="action" value="APPROVE" class="bg-market-success text-market-successBg px-4 py-2 rounded text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow">Approve</button>
+                            <button type="submit" name="action" value="TAKE_DOWN_FIX" class="bg-market-warning text-market-warningBg px-4 py-2 rounded text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow" title="Send back to vendor for mandatory edits">Fix Req</button>
+                            <button type="submit" name="action" value="REJECT" class="bg-market-danger text-white px-4 py-2 rounded text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-market-danger transition-all shadow">Reject</button>
                         </div>
-                    </td>
-                    <td><span class="text-market-muted">{{ p.category.name }}</span></td>
-                    <td class="text-market-sys font-mono">{{ p.vendor.username }}</td>
-                    <td class="font-mono">{{ p.price_xmr }} XMR</td>
-                    <td class="font-mono text-market-muted">{{ p.views_count }}</td>
-                    <td class="text-right pr-6 space-x-4">
-                        <button onclick="openProductAudit('{{ p.id }}', '{{ p.name }}', '{{ p.vendor.username }}', '{{ p.description|escapejs }}')" class="text-market-muted hover:text-market-text underline uppercase tracking-widest text-[9px]">Audit</button>
-                        <button class="text-market-danger/70 hover:text-market-danger underline uppercase tracking-widest text-[9px]">Purge</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="py-24 text-center border border-dashed border-market-border rounded-xl">
+                <p class="text-market-muted uppercase tracking-[0.2em] text-xs font-bold">No Pending Listings in Evaluation Queue</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- SUB-TAB: RECENTLY APPROVED -->
+    <div id="mod-catalog-approved" class="mod-catalog-view hidden space-y-6">
+        <div class="bg-market-surface border border-market-border rounded-xl shadow-lg overflow-hidden flex-grow flex flex-col">
+            <div class="overflow-x-auto flex-grow">
+                <table class="market-table min-w-[1000px] w-full">
+                    <thead>
+                        <tr>
+                            <th class="pl-6">ID</th>
+                            <th>Product & Type</th>
+                            <th>Vendor</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th class="text-right pr-6">Management Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-market-text divide-y divide-market-border">
+                        {% for p in approved_products %}
+                        <tr class="hover:bg-market-surfaceHover transition-colors">
+                            <td class="pl-6 font-mono text-market-muted">#{{ p.id }}</td>
+                            <td>
+                                <div class="space-y-0.5">
+                                    <a href="{% url 'product_detail' p.id %}" target="_blank" class="font-bold text-market-accent hover:underline block">{{ p.name }}</a>
+                                    <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-market-bg border border-market-border text-market-muted">{{ p.get_product_type_display }}</span>
+                                </div>
+                            </td>
+                            <td class="font-mono text-market-text">{{ p.vendor.username }}</td>
+                            <td><span class="bg-market-bg border border-market-border px-2.5 py-1 rounded text-market-muted text-[11px]">{{ p.category.name }}</span></td>
+                            <td class="font-mono font-bold text-market-accent">{{ p.price_xmr }} XMR</td>
+                            <td><span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-successBg text-market-success border border-market-success/30 inline-block">Active</span></td>
+                            <td class="text-right pr-6">
+                                <button onclick="openModTakedownModal({{ p.id }}, '{{ p.name|escapejs }}')" class="bg-market-danger text-white hover:bg-white hover:text-market-danger px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition-all shadow">Take Down</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-24 text-market-muted uppercase tracking-widest text-xs font-bold">No Approved Listings Found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB-TAB: ALL CATALOG (WITH ADVANCED SORTING & FILTERING) -->
+    <div id="mod-catalog-all" class="mod-catalog-view hidden space-y-6">
+        <form method="GET" action="{% url 'mod_dashboard' %}" class="bg-market-surface border border-market-border p-5 rounded-xl shadow-lg flex flex-wrap gap-4 items-center justify-between shrink-0">
+            <input type="hidden" name="tab" value="products">
+            <input type="hidden" name="subtab" value="all">
+            <div class="flex flex-wrap gap-4 items-center w-full sm:w-auto">
+                <div>
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest block mb-1">Sort Catalog By</label>
+                    <select name="sort" onchange="this.form.submit()" class="bg-market-bg border border-market-border rounded px-3 py-2 text-xs text-market-text outline-none focus:border-market-accent cursor-pointer">
+                        <option value="new" {% if sort_param == 'new' %}selected{% endif %}>Newest Items</option>
+                        <option value="views" {% if sort_param == 'views' %}selected{% endif %}>Highest Viewed</option>
+                        <option value="purchases" {% if sort_param == 'purchases' %}selected{% endif %}>Most Purchased</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest block mb-1">Filter Sector / Type</label>
+                    <select name="ptype" onchange="this.form.submit()" class="bg-market-bg border border-market-border rounded px-3 py-2 text-xs text-market-text outline-none focus:border-market-accent cursor-pointer">
+                        <option value="">All Categories / Types</option>
+                        <option value="PHYSICAL" {% if ptype_param == 'PHYSICAL' %}selected{% endif %}>Physical Goods</option>
+                        <option value="DIGITAL" {% if ptype_param == 'DIGITAL' %}selected{% endif %}>Digital Assets</option>
+                        <option value="ACCOUNT" {% if ptype_param == 'ACCOUNT' %}selected{% endif %}>Accounts / Credentials</option>
+                        <option value="SERVICE" {% if ptype_param == 'SERVICE' %}selected{% endif %}>Professional Services</option>
+                    </select>
+                </div>
+            </div>
+            {% if sort_param != 'new' or ptype_param %}
+            <a href="{% url 'mod_dashboard' %}?tab=products&subtab=all" class="bg-market-surfaceHover border border-market-border px-4 py-2 rounded text-xs text-market-muted hover:text-market-text uppercase tracking-widest transition-all shrink-0">Reset Filters</a>
+            {% endif %}
+        </form>
+
+        <div class="bg-market-surface border border-market-border rounded-xl shadow-lg overflow-hidden flex-grow flex flex-col">
+            <div class="overflow-x-auto flex-grow">
+                <table class="market-table min-w-[1000px] w-full">
+                    <thead>
+                        <tr>
+                            <th class="pl-6">ID</th>
+                            <th>Product & Type</th>
+                            <th>Vendor</th>
+                            <th>Price</th>
+                            <th>Metrics (Views / Orders)</th>
+                            <th>Status</th>
+                            <th class="text-right pr-6">Governance Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-market-text divide-y divide-market-border">
+                        {% for p in all_products %}
+                        <tr class="hover:bg-market-surfaceHover transition-colors">
+                            <td class="pl-6 font-mono text-market-muted">#{{ p.id }}</td>
+                            <td>
+                                <div class="space-y-0.5">
+                                    <a href="{% url 'product_detail' p.id %}" target="_blank" class="font-bold text-market-accent hover:underline block">{{ p.name }}</a>
+                                    <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-market-bg border border-market-border text-market-muted">{{ p.get_product_type_display }}</span>
+                                </div>
+                            </td>
+                            <td class="font-mono text-market-text">{{ p.vendor.username }}</td>
+                            <td class="font-mono font-bold text-market-accent">{{ p.price_xmr }} XMR</td>
+                            <td class="font-mono text-[11px] space-y-0.5">
+                                <div><span class="text-market-muted w-14 inline-block">Views:</span> <strong class="text-market-text">{{ p.views_count }}</strong></div>
+                                <div><span class="text-market-muted w-14 inline-block">Purchases:</span> <strong class="text-market-sys">{{ p.orders_count }}</strong></div>
+                            </td>
+                            <td>
+                                {% if p.status == 'ACTIVE' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-successBg text-market-success border border-market-success/30 inline-block">Active</span>
+                                {% elif p.status == 'PENDING' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-sysBg text-market-sys border border-market-sys/30 inline-block animate-pulse">Pending Review</span>
+                                {% elif p.status == 'FIX_REQUIRED' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-warningBg text-market-warning border border-market-warning/30 inline-block">Fix Required</span>
+                                {% elif p.status == 'REJECTED' or p.status == 'SUSPENDED' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-dangerBg text-market-danger border border-market-danger/30 inline-block">{{ p.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right pr-6">
+                                <button onclick="openModTakedownModal({{ p.id }}, '{{ p.name|escapejs }}')" class="bg-market-surfaceHover hover:bg-market-danger hover:text-white border border-market-border px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition-all shadow">Manage</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-24 text-market-muted uppercase tracking-widest text-xs font-bold">No Catalog Listings Found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Modal: Product Audit -->
-<div id="product-audit-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-market-bg border border-market-border w-full max-w-2xl flex flex-col shadow-[0_0_100px_rgba(255,255,255,0.05)]">
-        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
-            <span class="text-[11px] uppercase tracking-widest text-market-text font-medium">Listing Audit</span>
-            <button onclick="closeModal('product-audit-modal')" class="text-market-muted hover:text-market-text">✕</button>
+<!-- Modal: Moderator Takedown & Management -->
+<div id="mod-takedown-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-lg rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-danger font-bold">Governance Takedown Terminal</h3>
+                <p id="takedown-product-name" class="text-xs text-market-muted mt-1 font-bold">Managing Product #...</p>
+            </div>
+            <button onclick="closeModal('mod-takedown-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        
-        <div class="p-8 space-y-6">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 class="text-xl font-medium text-white mb-1" id="audit-name">Product Name</h2>
-                    <div class="text-[12px] text-market-muted" id="audit-vendor">Vendor: ########</div>
-                </div>
-                <div class="font-mono text-market-muted text-[11px]" id="audit-id">ID: #0</div>
+        <form id="mod-takedown-form" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div>
+                <label class="form-label text-market-text">Reason for Takedown / Remediation Notes *</label>
+                <textarea name="notes" rows="4" required class="form-input rounded-lg text-xs" placeholder="Detail the exact policy violation or required edits..."></textarea>
             </div>
-
-            <div class="space-y-2">
-                <label class="text-[10px] text-market-muted uppercase tracking-widest">Public Description</label>
-                <div class="bg-black/40 border border-market-border p-4 text-[13px] text-market-text leading-relaxed max-h-48 overflow-y-auto font-mono" id="audit-description">
-                    Product description text...
-                </div>
-            </div>
-
-            <div class="flex gap-4 pt-4">
-                <button class="flex-grow bg-market-surface border border-market-border text-market-text py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-surfaceHover transition-all">
-                    Flag for Review
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button type="submit" name="action" value="TAKE_DOWN_FIX" class="bg-market-warning text-market-warningBg hover:bg-white px-6 py-3 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow flex flex-col items-center justify-center gap-1">
+                    <span>Take Down (Fix Req)</span>
+                    <span class="text-[9px] font-normal opacity-80">Vendor can edit & resubmit</span>
                 </button>
-                <button class="flex-grow bg-market-dangerBg border border-market-danger text-market-danger py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-danger/10 transition-all">
-                    Purge Listing
+                <button type="submit" name="action" value="TAKE_DOWN_PERM" class="bg-market-danger text-white hover:bg-white hover:text-market-danger px-6 py-3 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow flex flex-col items-center justify-center gap-1">
+                    <span>Permanent Takedown</span>
+                    <span class="text-[9px] font-normal opacity-80">Permanent catalog ban</span>
                 </button>
             </div>
-        </div>
+            <div class="pt-4 border-t border-market-border flex justify-end">
+                <button type="button" onclick="closeModal('mod-takedown-modal')" class="bg-market-surfaceHover border border-market-border text-market-text px-6 py-2.5 rounded-lg text-xs uppercase tracking-widest font-medium">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-    function openProductAudit(id, name, vendor, description) {
-        document.getElementById('audit-id').innerText = 'ID: #' + id;
-        document.getElementById('audit-name').innerText = name;
-        document.getElementById('audit-vendor').innerText = 'Vendor: ' + vendor;
-        document.getElementById('audit-description').innerText = description;
-        
-        document.getElementById('product-audit-modal').classList.remove('hidden');
+    function switchModCatalogTab(tabId) {
+        document.querySelectorAll('.mod-catalog-view').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.mod-cat-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-market-sys', 'text-white', 'shadow');
+            btn.classList.add('text-market-muted');
+        });
+
+        document.getElementById('mod-catalog-' + tabId).classList.remove('hidden');
+        const activeBtn = document.getElementById('mod-cat-btn-' + tabId);
+        activeBtn.classList.remove('text-market-muted');
+        activeBtn.classList.add('active', 'bg-market-sys', 'text-white', 'shadow');
     }
+
+    function openModTakedownModal(productId, productName) {
+        document.getElementById('takedown-product-name').innerText = "Managing: " + productName + " (#" + productId + ")";
+        document.getElementById('mod-takedown-form').action = "/mod/product/" + productId + "/manage/";
+        openModal('mod-takedown-modal');
+    }
+
+    // Auto-switch to 'All' tab if URL params indicate filtering
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'products' && urlParams.get('subtab') === 'all') {
+            switchTab('products');
+            switchModCatalogTab('all');
+        }
+    });
 </script>

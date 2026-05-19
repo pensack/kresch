@@ -88,11 +88,14 @@ class Product(models.Model):
     image_url = models.URLField(max_length=500, blank=True)
     
     STATUS_CHOICES = (
-        ('PENDING', 'Pending Verification'),
+        ('PENDING', 'Pending Approval'),
         ('ACTIVE', 'Active / Online'),
-        ('SUSPENDED', 'Suspended'),
+        ('REJECTED', 'Rejected'),
+        ('FIX_REQUIRED', 'Fix Required'),
+        ('SUSPENDED', 'Permanently Suspended'),
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE', db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING', db_index=True)
+    mod_notes = models.TextField(blank=True)
     
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

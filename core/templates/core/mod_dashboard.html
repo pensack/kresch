@@ -20,6 +20,12 @@
     <button onclick="switchTab('categories')" id="tab-btn-categories" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all">
         Categories
     </button>
+    <button onclick="switchTab('products')" id="tab-btn-products" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
+        Catalog / Approvals
+        {% if pending_products.count %}
+        <span class="w-2 h-2 bg-market-sys rounded-full animate-pulse"></span>
+        {% endif %}
+    </button>
     <button onclick="switchTab('vendors')" id="tab-btn-vendors" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
         Vendor Applications
         {% if pending_vendors.count %}
@@ -164,6 +170,8 @@
         {% endfor %}
     </div>
 </div>
+
+{% include 'core/mod_tabs/products.html' %}
 
 <!-- Modal: Add Category -->
 <div id="add-category-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">

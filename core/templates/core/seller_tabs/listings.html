@@ -1,33 +1,95 @@
 <!-- TAB: LISTINGS -->
 <div id="tab-listings" class="tab-content flex-grow flex flex-col p-4 lg:p-8 lg:max-w-7xl mx-auto w-full space-y-6 animate-fade-in">
+    
+    <!-- Header & Core Actions -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-market-border pb-6 shrink-0">
         <div>
             <h1 class="text-lg lg:text-xl font-bold uppercase tracking-[0.2em] text-market-accent">My Listings</h1>
-            <p class="text-xs text-market-muted tracking-wider mt-1">Manage Marketplace Inventory & Pricing</p>
+            <p class="text-xs text-market-muted tracking-wider mt-1">Manage Marketplace Inventory, Pricing & Governance Status</p>
         </div>
-        <button onclick="openModal('create-listing-modal')" class="w-full sm:w-auto bg-market-accent text-market-bg hover:bg-white px-6 py-3 text-xs uppercase tracking-widest font-bold transition-all rounded shadow-lg flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            <span>New Listing</span>
-        </button>
+        <div class="w-full sm:w-auto flex flex-wrap gap-3 items-center">
+            <!-- Feature 10: Export Inventory CSV -->
+            <a href="{% url 'export_inventory' %}" class="flex-grow sm:flex-grow-0 bg-market-surfaceHover border border-market-border text-market-text hover:bg-market-border px-4 py-2.5 text-xs uppercase tracking-widest font-medium transition-all rounded shadow flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Export CSV</span>
+            </a>
+            <button onclick="openModal('create-listing-modal')" class="flex-grow sm:flex-grow-0 bg-market-accent text-market-bg hover:bg-white px-6 py-2.5 text-xs uppercase tracking-widest font-bold transition-all rounded shadow-lg flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                <span>New Listing</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Feature 1 & 2: Pending Approval & Rejection Inspection HUD -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+        <!-- Pending Banner -->
+        <div class="bg-market-sysBg border border-market-sys/30 p-4 rounded-xl shadow-lg flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-market-sys/20 flex items-center justify-center rounded-full shrink-0 border border-market-sys/40 animate-pulse">
+                    <svg class="w-5 h-5 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-xs text-market-sys uppercase tracking-widest font-bold">Pending Approval</h3>
+                    <p class="text-xs text-market-muted mt-0.5">Listings awaiting moderator evaluation before public index.</p>
+                </div>
+            </div>
+            <span class="text-xs font-mono font-bold bg-market-sys text-white px-3 py-1 rounded-full shrink-0 shadow">
+                {% filter length %}{% for p in my_products %}{% if p.status == 'PENDING' %}1{% endif %}{% endfor %}{% endfilter %} Item(s)
+            </span>
+        </div>
+
+        <!-- Rejection HUD -->
+        <div class="bg-market-dangerBg border border-market-danger/30 p-4 rounded-xl shadow-lg flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-market-danger/20 flex items-center justify-center rounded-full shrink-0 border border-market-danger/40">
+                    <svg class="w-5 h-5 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-xs text-market-danger uppercase tracking-widest font-bold">Rejected / Suspended</h3>
+                    <p class="text-xs text-market-muted mt-0.5">Listings flagged or blocked by moderation staff.</p>
+                </div>
+            </div>
+            <button onclick="openModal('rejection-inspection-modal')" class="bg-market-danger text-white hover:bg-white hover:text-market-danger px-4 py-1.5 rounded text-xs uppercase tracking-widest font-bold transition-all shadow shrink-0">
+                See More
+            </button>
+        </div>
+    </div>
+
+    <!-- Feature 4: Advanced Inventory Search & Filter Bar -->
+    <div class="bg-market-surface border border-market-border p-4 rounded-xl shadow flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
+        <div class="w-full sm:w-72 relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-market-muted">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </span>
+            <input type="text" id="listing-search" onkeyup="filterListings()" class="w-full bg-market-bg border border-market-border rounded-lg pl-9 pr-4 py-2 text-xs text-market-text outline-none focus:border-market-accent transition-all" placeholder="Search inventory by name...">
+        </div>
+        <div class="w-full sm:w-auto flex gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <button onclick="filterListingType('ALL')" class="listing-filter-btn active px-3 py-1.5 rounded bg-market-surfaceHover border border-market-border text-xs uppercase tracking-widest text-market-accent font-medium shrink-0">All</button>
+            <button onclick="filterListingType('PHYSICAL')" class="listing-filter-btn px-3 py-1.5 rounded bg-market-bg border border-market-border text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Physical</button>
+            <button onclick="filterListingType('DIGITAL')" class="listing-filter-btn px-3 py-1.5 rounded bg-market-bg border border-market-border text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Digital</button>
+            <button onclick="filterListingType('ACCOUNT')" class="listing-filter-btn px-3 py-1.5 rounded bg-market-bg border border-market-border text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Accounts</button>
+            <button onclick="filterListingType('SERVICE')" class="listing-filter-btn px-3 py-1.5 rounded bg-market-bg border border-market-border text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Services</button>
+        </div>
     </div>
 
     <!-- Listings Table Container -->
     <div class="bg-market-surface border border-market-border rounded-xl shadow-lg overflow-hidden flex-grow flex flex-col">
         <div class="overflow-x-auto flex-grow">
-            <table class="market-table min-w-[850px] w-full">
+            <table class="market-table min-w-[1000px] w-full" id="listings-table">
                 <thead>
                     <tr>
                         <th class="pl-6">ID</th>
-                        <th>Product</th>
+                        <th>Product & Type</th>
                         <th>Category</th>
-                        <th>Price (XMR)</th>
+                        <th>Price (XMR/USD)</th>
+                        <th>Performance</th>
                         <th>Status</th>
-                        <th class="text-right pr-6">Action</th>
+                        <th class="text-right pr-6">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-xs text-market-text divide-y divide-market-border">
                     {% for product in my_products %}
-                    <tr class="hover:bg-market-surfaceHover transition-colors">
+                    <tr class="hover:bg-market-surfaceHover transition-colors listing-row" data-name="{{ product.name|lower }}" data-type="{{ product.product_type }}">
                         <td class="pl-6 font-mono text-market-muted">#{{ product.id }}</td>
                         <td>
                             <div class="flex items-center gap-4">
@@ -38,25 +100,66 @@
                                     <span class="text-xs text-market-muted">∅</span>
                                     {% endif %}
                                 </div>
-                                <span class="font-medium text-market-accent">{{ product.name }}</span>
+                                <div class="space-y-0.5">
+                                    <a href="{% url 'product_detail' product.id %}" class="font-bold text-market-accent hover:underline block">{{ product.name }}</a>
+                                    <!-- Feature 8: Product Type Badge System -->
+                                    <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-market-bg border border-market-border text-market-muted">
+                                        {{ product.get_product_type_display }}
+                                    </span>
+                                </div>
                             </div>
                         </td>
                         <td>
                             <span class="bg-market-bg border border-market-border px-2.5 py-1 rounded text-market-muted text-[11px]">{{ product.category.name }}</span>
                         </td>
-                        <td class="font-mono font-bold text-market-accent">{{ product.price_xmr }} XMR</td>
                         <td>
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider bg-market-successBg text-market-success border border-market-success/30">
-                                Active
-                            </span>
+                            <div class="space-y-0.5">
+                                <div class="font-mono font-bold text-market-accent">{{ product.price_xmr }} XMR</div>
+                                {% if product.price_usd %}
+                                <div class="text-[11px] text-market-muted font-mono">${{ product.price_usd }} USD</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- Feature 7: Listing Performance Metrics HUD -->
+                        <td>
+                            <div class="space-y-1 font-mono text-[11px]">
+                                <div class="flex items-center gap-2"><span class="text-market-muted w-12">Views:</span> <span class="text-market-text font-bold">{{ product.views_count }}</span></div>
+                                <div class="flex items-center gap-2"><span class="text-market-muted w-12">Stock:</span> <span class="text-market-text font-bold">{% if product.available_qty is not None %}{{ product.available_qty }}{% else %}∞{% endif %}</span></div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if product.status == 'ACTIVE' %}
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-successBg text-market-success border border-market-success/30 inline-block">Active</span>
+                            {% elif product.status == 'PENDING' %}
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-sysBg text-market-sys border border-market-sys/30 inline-block animate-pulse">Pending Approval</span>
+                            {% elif product.status == 'FIX_REQUIRED' %}
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-warningBg text-market-warning border border-market-warning/30 inline-block">Fix Required</span>
+                            {% elif product.status == 'REJECTED' or product.status == 'SUSPENDED' %}
+                            <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-dangerBg text-market-danger border border-market-danger/30 inline-block">{{ product.status }}</span>
+                            {% endif %}
                         </td>
                         <td class="text-right pr-6">
-                            <button class="text-market-sys hover:underline text-xs uppercase tracking-wider font-medium">Edit</button>
+                            <div class="flex items-center justify-end gap-2">
+                                <!-- Feature 5: Quick Price Adjustment Modal -->
+                                <button onclick="openModal('quick-price-modal-{{ product.id }}')" class="bg-market-bg hover:bg-market-surface border border-market-border px-2.5 py-1.5 rounded text-[11px] text-market-text uppercase tracking-wider font-medium transition-all" title="Quick Price Update">Price</button>
+                                
+                                <!-- Feature 6: Stock Toggle Modal -->
+                                <button onclick="openModal('quick-stock-modal-{{ product.id }}')" class="bg-market-bg hover:bg-market-surface border border-market-border px-2.5 py-1.5 rounded text-[11px] text-market-text uppercase tracking-wider font-medium transition-all" title="Stock Management">Stock</button>
+                                
+                                <!-- Feature 3: Fix Required / Remediation Workflow -->
+                                <button onclick="openModal('edit-product-modal-{{ product.id }}')" class="bg-market-sys hover:bg-white hover:text-market-sys text-white px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition-all shadow" title="Edit / Remediate Listing">{% if product.status == 'FIX_REQUIRED' %}Fix{% else %}Edit{% endif %}</button>
+                                
+                                <!-- Feature 9: Duplicate Listing Utility -->
+                                <form action="{% url 'duplicate_product' product.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-market-surfaceHover hover:bg-market-border border border-market-border px-2.5 py-1.5 rounded text-[11px] text-market-muted hover:text-market-text uppercase tracking-wider font-medium transition-all" title="Clone Listing">Clone</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-24 text-market-muted uppercase tracking-widest text-xs">No Listings Active</td>
+                        <td colspan="7" class="text-center py-24 text-market-muted uppercase tracking-widest text-xs">No Listings Active</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -64,6 +167,136 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Rejection Inspection HUD -->
+<div id="rejection-inspection-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-3xl rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-danger font-bold">Inspection HUD: Flagged & Rejected Inventory</h3>
+                <p class="text-xs text-market-muted mt-1">Review moderator feedback and takedown reasons below</p>
+            </div>
+            <button onclick="closeModal('rejection-inspection-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-market-borderFocus transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div class="p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
+            {% filter length %}{% set rej_found = False %}{% for p in my_products %}{% if p.status == 'REJECTED' or p.status == 'SUSPENDED' or p.status == 'FIX_REQUIRED' %}{% set rej_found = True %}{% endif %}{% endfor %}{% endfilter %}
+            {% for p in my_products %}
+            {% if p.status == 'REJECTED' or p.status == 'SUSPENDED' or p.status == 'FIX_REQUIRED' %}
+            <div class="bg-market-bg border border-market-border p-5 rounded-xl space-y-3 shadow">
+                <div class="flex items-center justify-between border-b border-market-border/50 pb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-market-accent text-sm">{{ p.name }}</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-market-surface border border-market-border text-market-muted">#{{ p.id }}</span>
+                    </div>
+                    <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider {% if p.status == 'FIX_REQUIRED' %}bg-market-warningBg text-market-warning border border-market-warning/30{% else %}bg-market-dangerBg text-market-danger border border-market-danger/30{% endif %}">
+                        {{ p.status }}
+                    </span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-xs font-bold text-market-text uppercase tracking-widest block">Moderator Feedback / Reason:</span>
+                    <p class="font-mono text-xs text-market-muted bg-market-surface p-4 rounded-lg border border-market-border whitespace-pre-wrap break-all">{{ p.mod_notes|default:"No specific notes provided by moderator." }}</p>
+                </div>
+                {% if p.status == 'FIX_REQUIRED' %}
+                <div class="pt-2 flex justify-end">
+                    <button onclick="closeModal('rejection-inspection-modal'); openModal('edit-product-modal-{{ p.id }}')" class="bg-market-warning text-market-warningBg hover:bg-white px-5 py-2 rounded text-xs uppercase tracking-widest font-bold transition-all shadow">
+                        Remediate Listing
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals for Quick Price, Quick Stock, and Full Edit per Product -->
+{% for product in my_products %}
+<!-- Quick Price Modal -->
+<div id="quick-price-modal-{{ product.id }}" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-md rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Quick Price Update (#{{ product.id }})</h3>
+            <button onclick="closeModal('quick-price-modal-{{ product.id }}')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form action="{% url 'edit_product' product.id %}" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Price (XMR) *</label>
+                    <input type="number" step="0.000001" name="price_xmr" value="{{ product.price_xmr }}" required class="form-input rounded-lg font-mono">
+                </div>
+                <div>
+                    <label class="form-label">Price (USD)</label>
+                    <input type="number" step="0.01" name="price_usd" value="{{ product.price_usd|default:'' }}" class="form-input rounded-lg font-mono">
+                </div>
+            </div>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-3">
+                <button type="button" onclick="closeModal('quick-price-modal-{{ product.id }}')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-sys text-white px-6 py-2.5 rounded text-xs uppercase tracking-widest font-bold shadow">Save Price</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Stock Modal -->
+<div id="quick-stock-modal-{{ product.id }}" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-md rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Stock Management (#{{ product.id }})</h3>
+            <button onclick="closeModal('quick-stock-modal-{{ product.id }}')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form action="{% url 'edit_product' product.id %}" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Available Quantity (Leave blank for infinite)</label>
+                    <input type="number" name="available_qty" value="{{ product.available_qty|default:'' }}" class="form-input rounded-lg font-mono" placeholder="∞">
+                </div>
+            </div>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-3">
+                <button type="button" onclick="closeModal('quick-stock-modal-{{ product.id }}')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-sys text-white px-6 py-2.5 rounded text-xs uppercase tracking-widest font-bold shadow">Save Stock</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Full Edit / Remediation Modal -->
+<div id="edit-product-modal-{{ product.id }}" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-2xl rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Edit Listing (#{{ product.id }})</h3>
+                {% if product.status == 'FIX_REQUIRED' %}
+                <p class="text-xs text-market-warning mt-1 font-bold">Remediating this listing will reset its status to Pending Approval</p>
+                {% endif %}
+            </div>
+            <button onclick="closeModal('edit-product-modal-{{ product.id }}')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form action="{% url 'edit_product' product.id %}" method="POST" class="p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><label class="form-label">Product Name</label><input type="text" name="name" value="{{ product.name }}" required class="form-input rounded-lg"></div>
+                <div><label class="form-label">Available Qty</label><input type="number" name="available_qty" value="{{ product.available_qty|default:'' }}" class="form-input rounded-lg" placeholder="∞"></div>
+                <div><label class="form-label">Price (XMR)</label><input type="number" step="0.000001" name="price_xmr" value="{{ product.price_xmr }}" required class="form-input rounded-lg font-mono"></div>
+                <div><label class="form-label">Price (USD)</label><input type="number" step="0.01" name="price_usd" value="{{ product.price_usd|default:'' }}" class="form-input rounded-lg font-mono"></div>
+            </div>
+            <div>
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="5" required class="form-input rounded-lg resize-none">{{ product.description }}</textarea>
+            </div>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-4">
+                <button type="button" onclick="closeModal('edit-product-modal-{{ product.id }}')" class="bg-market-surfaceHover border border-market-border text-market-text px-6 py-3 rounded-lg text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-sys text-white px-8 py-3 rounded-lg text-xs uppercase tracking-widest font-bold shadow-lg">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
 
 <!-- Modal: Create Listing -->
 <div id="create-listing-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -177,5 +410,30 @@
         } else {
             contactField.classList.add('hidden');
         }
+    }
+
+    function filterListings() {
+        const query = document.getElementById('listing-search').value.toLowerCase();
+        const rows = document.querySelectorAll('.listing-row');
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            if (name.includes(query)) row.style.display = '';
+            else row.style.display = 'none';
+        });
+    }
+
+    function filterListingType(type) {
+        document.querySelectorAll('.listing-filter-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-market-surfaceHover', 'text-market-accent');
+            btn.classList.add('bg-market-bg', 'text-market-muted');
+        });
+        event.target.classList.remove('bg-market-bg', 'text-market-muted');
+        event.target.classList.add('active', 'bg-market-surfaceHover', 'text-market-accent');
+
+        const rows = document.querySelectorAll('.listing-row');
+        rows.forEach(row => {
+            if (type === 'ALL' || row.getAttribute('data-type') === type) row.style.display = '';
+            else row.style.display = 'none';
+        });
     }
 </script>

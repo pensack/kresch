@@ -121,7 +121,6 @@ def seller_dashboard(request):
         except:
             specs = {}
             
-        prod_status = 'ACTIVE' if request.user.verification_status == 'VERIFIED' else 'PENDING'
         Product.objects.create(
             name=request.POST.get('name'),
             description=request.POST.get('description'),
@@ -133,11 +132,11 @@ def seller_dashboard(request):
             digital_content=request.POST.get('digital_content', ''),
             usage_instructions=request.POST.get('usage_instructions', ''),
             image=request.FILES.get('image'),
-            status=prod_status
+            status='PENDING'
         )
         return redirect('seller_dashboard')
         
-    my_products = Product.objects.filter(vendor=request.user).select_related('category')
+    my_products = Product.objects.filter(vendor=request.user).select_related('category').order_by('-created_at')
     my_orders = Order.objects.filter(product__vendor=request.user).select_related('buyer', 'product').order_by('-created_at')
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('children')
     
@@ -189,6 +188,62 @@ def submit_verification(request):
     return redirect('seller_dashboard')
 
 @login_required
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor=request.user)
+    if request.method == 'POST':
+        product.name = request.POST.get('name', product.name)
+        product.description = request.POST.get('description', product.description)
+        product.price_xmr = request.POST.get('price_xmr', product.price_xmr)
+        if request.POST.get('price_usd'):
+            product.price_usd = request.POST.get('price_usd')
+        if request.POST.get('available_qty'):
+            product.available_qty = request.POST.get('available_qty')
+            
+        # If product was FIX_REQUIRED, reset to PENDING for moderator re-review
+        if product.status == 'FIX_REQUIRED':
+            product.status = 'PENDING'
+            Notification.objects.create(
+                user=request.user,
+                title="Remediation Submitted",
+                content=f"Your edits for '{product.name}' have been submitted for moderator re-review.",
+                link="/seller/#listings"
+            )
+            
+        product.save()
+    return redirect('seller_dashboard')
+
+@login_required
+def duplicate_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor=request.user)
+    Product.objects.create(
+        name=f"Copy of {product.name}",
+        description=product.description,
+        price_xmr=product.price_xmr,
+        price_usd=product.price_usd,
+        vendor=request.user,
+        category=product.category,
+        product_type=product.product_type,
+        digital_content=product.digital_content,
+        usage_instructions=product.usage_instructions,
+        status='PENDING'
+    )
+    return redirect('seller_dashboard')
+
+@login_required
+def export_inventory(request):
+    if request.user.role != 'VENDOR':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="inventory_export.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Name', 'Type', 'Price_XMR', 'Price_USD', 'Status', 'Views', 'Created'])
+    for p in Product.objects.filter(vendor=request.user):
+        writer.writerow([p.id, p.name, p.product_type, p.price_xmr, p.price_usd, p.status, p.views_count, p.created_at])
+    return response
+
+@login_required
 def buyer_dashboard(request):
     orders = Order.objects.filter(buyer=request.user).select_related('product', 'product__vendor').order_by('-created_at')
     bookmarks = Bookmark.objects.filter(user=request.user).select_related('product', 'product__vendor').order_by('-created_at')
@@ -216,7 +271,27 @@ def mod_dashboard(request):
         return render(request, '404.html', {'reason': 'Insufficient terminal clearance.'}, status=404)
     
     users = User.objects.all().order_by('-date_joined')
-    products = Product.objects.all().select_related('vendor', 'category').order_by('-created_at')
+    from django.db.models import Count
+    products = Product.objects.all().select_related('vendor', 'category').annotate(orders_count=Count('order'))
+    
+    # Sub-tab querysets for Catalog Management
+    pending_products = products.filter(status='PENDING').order_by('created_at')
+    approved_products = products.filter(status='ACTIVE').order_by('-created_at')
+    all_products = products.all()
+    
+    # Advanced sorting and filtering for 'All' tab
+    sort_param = request.GET.get('sort', 'new')
+    if sort_param == 'new':
+        all_products = all_products.order_by('-created_at')
+    elif sort_param == 'views':
+        all_products = all_products.order_by('-views_count')
+    elif sort_param == 'purchases':
+        all_products = all_products.order_by('-orders_count')
+        
+    ptype_param = request.GET.get('ptype')
+    if ptype_param:
+        all_products = all_products.filter(product_type=ptype_param.upper())
+        
     orders = Order.objects.all().select_related('product', 'buyer', 'product__vendor').order_by('-created_at')
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('children')
     
@@ -226,12 +301,70 @@ def mod_dashboard(request):
     context = {
         'users': users,
         'products': products,
+        'pending_products': pending_products,
+        'approved_products': approved_products,
+        'all_products': all_products,
+        'sort_param': sort_param,
+        'ptype_param': ptype_param,
         'orders': orders,
         'categories': categories,
         'disputed_orders': disputed_orders,
         'pending_vendors': pending_vendors,
     }
     return render(request, 'core/mod_dashboard.html', context)
+
+@login_required
+def mod_manage_product(request, product_id):
+    if request.user.role not in ['MODERATOR', 'ADMIN']:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        notes = request.POST.get('notes', '')
+        
+        if action == 'APPROVE':
+            product.status = 'ACTIVE'
+            product.mod_notes = notes
+            product.save()
+            Notification.objects.create(
+                user=product.vendor,
+                title="Product Approved",
+                content=f"Your listing '{product.name}' has been approved and is now live in the catalog.",
+                link=f"/product/{product.id}/"
+            )
+        elif action == 'REJECT':
+            product.status = 'REJECTED'
+            product.mod_notes = notes
+            product.save()
+            Notification.objects.create(
+                user=product.vendor,
+                title="Listing Rejected",
+                content=f"Your listing '{product.name}' was rejected. Reason: {notes}",
+                link="/seller/#listings"
+            )
+        elif action == 'TAKE_DOWN_FIX':
+            product.status = 'FIX_REQUIRED'
+            product.mod_notes = notes
+            product.save()
+            Notification.objects.create(
+                user=product.vendor,
+                title="Listing Suspended (Fix Required)",
+                content=f"Your listing '{product.name}' was taken down. Reason: {notes}. Please edit the listing to resolve these issues.",
+                link="/seller/#listings"
+            )
+        elif action == 'TAKE_DOWN_PERM':
+            product.status = 'SUSPENDED'
+            product.mod_notes = notes
+            product.save()
+            Notification.objects.create(
+                user=product.vendor,
+                title="Listing Permanently Suspended",
+                content=f"Your listing '{product.name}' has been permanently removed by a moderator. Reason: {notes}",
+                link="/seller/#listings"
+            )
+            
+    return redirect('mod_dashboard')
 
 @login_required
 def manage_category(request):
