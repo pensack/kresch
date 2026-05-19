@@ -1,40 +1,63 @@
-<div id="tab-settings" class="tab-content p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div class="flex justify-between items-center border-b border-market-border pb-6">
-        <h2 class="text-[18px] uppercase tracking-[0.2em] text-market-text font-medium">Neural Configuration</h2>
-        <span class="text-[10px] text-market-muted uppercase tracking-widest font-mono">Terminal ID: {{ user.id|stringformat:"04d" }}</span>
+<!-- TAB: SETTINGS -->
+<div id="tab-settings" class="tab-content flex-grow p-4 lg:p-8 lg:max-w-4xl mx-auto w-full space-y-8 animate-fade-in">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-market-border pb-6 shrink-0">
+        <div>
+            <h1 class="text-lg lg:text-xl font-bold uppercase tracking-[0.2em] text-market-accent">Settings</h1>
+            <p class="text-xs text-market-muted tracking-wider mt-1">Vendor Account & Cryptographic Configuration</p>
+        </div>
+        <div class="flex items-center gap-3 bg-market-surface border border-market-border px-4 py-2 rounded-lg">
+            <span class="text-xs text-market-muted uppercase tracking-wider">Account ID:</span>
+            <span class="text-xs font-mono text-market-accent font-bold">#{{ user.id|stringformat:"04d" }}</span>
+        </div>
     </div>
 
-    <form method="POST" action="{% url 'update_vendor_settings' %}" class="max-w-3xl space-y-8">
+    <form method="POST" action="{% url 'update_vendor_settings' %}" class="space-y-8">
         {% csrf_token %}
         
         <!-- Financial Sector -->
-        <div class="bg-market-surface border border-market-border p-8 space-y-6">
-            <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-accent font-bold">Financial Protocol (Monero Multisig)</h3>
+        <div class="bg-market-surface border border-market-border rounded-xl p-6 lg:p-8 space-y-6 shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-market-sys/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div>
+                <h3 class="text-sm uppercase tracking-widest text-market-accent font-bold flex items-center gap-2">
+                    <svg class="w-4 h-4 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <span>Monero Multisig Protocol</span>
+                </h3>
+                <p class="text-xs text-market-muted mt-1">Configure your public spend key for secure 2-of-3 escrow transactions</p>
+            </div>
             
-            <div class="space-y-4">
-                <label class="block text-[10px] uppercase tracking-widest text-market-muted">Public Spend Key (Key B)</label>
+            <div class="space-y-3">
+                <label class="block text-xs uppercase tracking-widest text-market-muted font-medium">Public Spend Key (Key B)</label>
                 <div class="relative group">
-                    <input type="text" name="xmr_multisig_pubkey" value="{{ user.xmr_multisig_pubkey|default:'' }}" class="w-full bg-market-bg border border-market-border p-4 text-[13px] font-mono text-market-text outline-none focus:border-market-accent transition-all" placeholder="Paste your Monero Public Spend Key here...">
-                    <div class="mt-2 text-[9px] text-market-muted uppercase tracking-wider leading-relaxed opacity-60">
-                        This key is used as 'Key B' in the 2-of-3 multisig escrow. Your funds are unrecoverable without this link initialized.
+                    <input type="text" name="xmr_multisig_pubkey" value="{{ user.xmr_multisig_pubkey|default:'' }}" class="w-full bg-market-bg border border-market-border rounded-lg p-4 text-xs font-mono text-market-text outline-none focus:border-market-sys transition-all shadow-inner" placeholder="Paste your Monero Public Spend Key here...">
+                    <div class="mt-3 text-xs text-market-muted leading-relaxed flex items-start gap-2 bg-market-bg/50 p-3 rounded-lg border border-market-border/50">
+                        <svg class="w-4 h-4 text-market-warning shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>This key is utilized as 'Key B' in the 2-of-3 multisig escrow agreement. To ensure you can release or claim escrowed funds, this key must be correctly initialized.</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Identity Sector -->
-        <div class="bg-market-surface border border-market-border p-8 space-y-6">
-            <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-text font-bold">Identity Verification (PGP)</h3>
+        <div class="bg-market-surface border border-market-border rounded-xl p-6 lg:p-8 space-y-6 shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div>
+                <h3 class="text-sm uppercase tracking-widest text-market-accent font-bold flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    <span>PGP Public Key</span>
+                </h3>
+                <p class="text-xs text-market-muted mt-1">Your public key for encrypted buyer communications and secure address delivery</p>
+            </div>
             
-            <div class="space-y-4">
-                <label class="block text-[10px] uppercase tracking-widest text-market-muted">PGP Public Key</label>
-                <textarea name="pgp_public_key" rows="8" class="w-full bg-market-bg border border-market-border p-4 text-[11px] font-mono text-market-muted outline-none focus:border-market-text transition-all" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----">{{ user.pgp_public_key|default:'' }}</textarea>
+            <div class="space-y-3">
+                <label class="block text-xs uppercase tracking-widest text-market-muted font-medium">PGP Public Key Block</label>
+                <textarea name="pgp_public_key" rows="10" class="w-full bg-market-bg border border-market-border rounded-lg p-4 text-xs font-mono text-market-muted outline-none focus:border-purple-500 transition-all shadow-inner" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----">{{ user.pgp_public_key|default:'' }}</textarea>
             </div>
         </div>
 
-        <div class="flex justify-end">
-            <button type="submit" class="bg-market-text text-market-bg px-10 py-3 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                Sync Terminal Settings
+        <div class="flex justify-end pt-4">
+            <button type="submit" class="w-full sm:w-auto bg-market-accent text-market-bg hover:bg-white px-10 py-3.5 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow-xl flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Save Settings</span>
             </button>
         </div>
     </form>

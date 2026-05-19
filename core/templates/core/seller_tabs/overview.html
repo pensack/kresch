@@ -1,10 +1,107 @@
 <!-- TAB: OVERVIEW -->
-<div id="tab-overview" class="tab-content active flex-grow p-4 lg:p-6 lg:max-w-7xl mx-auto w-full">
-    <h1 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-6 font-medium">Terminal Overview</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <div class="border border-market-border bg-[#0a0a0a] p-5">
-            <div class="text-[10px] uppercase tracking-widest text-market-muted mb-1">Total Sales</div>
-            <div class="text-[20px] font-mono text-market-accent">142.50 <span class="text-sm text-market-muted">XMR</span></div>
+<div id="tab-overview" class="tab-content active flex-grow p-4 lg:p-8 lg:max-w-7xl mx-auto w-full space-y-8 animate-fade-in">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-market-border pb-6">
+        <div>
+            <h1 class="text-lg lg:text-xl font-bold uppercase tracking-[0.2em] text-market-accent">Overview</h1>
+            <p class="text-xs text-market-muted tracking-wider mt-1">Vendor Performance & Metrics</p>
+        </div>
+        <div class="flex items-center gap-3 bg-market-surface border border-market-border px-4 py-2 rounded-lg">
+            <span class="text-xs text-market-muted uppercase tracking-wider">Account ID:</span>
+            <span class="text-xs font-mono text-market-accent font-bold">#{{ user.id|stringformat:"04d" }}</span>
+        </div>
+    </div>
+
+    <!-- Stats Bento Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-market-surface border border-market-border p-6 rounded-xl hover:border-market-borderFocus transition-all group shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-market-sys/5 rounded-full blur-2xl group-hover:bg-market-sys/10 transition-colors"></div>
+            <div class="text-xs uppercase tracking-widest text-market-muted mb-2 font-medium">Total Sales</div>
+            <div class="text-2xl lg:text-3xl font-mono font-bold text-market-accent flex items-baseline gap-2">
+                {{ user.total_sales|default:"0.00" }} 
+                <span class="text-xs font-sans text-market-muted font-normal uppercase tracking-widest">XMR</span>
+            </div>
+            <div class="mt-4 text-[11px] text-market-success flex items-center gap-1 font-medium">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <span>Lifetime Volume</span>
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-6 rounded-xl hover:border-market-borderFocus transition-all group shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-market-success/5 rounded-full blur-2xl group-hover:bg-market-success/10 transition-colors"></div>
+            <div class="text-xs uppercase tracking-widest text-market-muted mb-2 font-medium">Trust Score</div>
+            <div class="text-2xl lg:text-3xl font-mono font-bold text-market-success flex items-baseline gap-2">
+                {{ user.trust_score|default:"100" }}%
+            </div>
+            <div class="mt-4 text-[11px] text-market-muted flex items-center gap-1">
+                <span>Based on completed orders</span>
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-6 rounded-xl hover:border-market-borderFocus transition-all group shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-market-warning/5 rounded-full blur-2xl group-hover:bg-market-warning/10 transition-colors"></div>
+            <div class="text-xs uppercase tracking-widest text-market-muted mb-2 font-medium">Vendor Level</div>
+            <div class="text-2xl lg:text-3xl font-mono font-bold text-market-warning flex items-baseline gap-2">
+                Level {{ user.vendor_level|default:"1" }}
+            </div>
+            <div class="mt-4 text-[11px] text-market-muted flex items-center gap-1">
+                <span>Verified Seller Tier</span>
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-6 rounded-xl hover:border-market-borderFocus transition-all group shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors"></div>
+            <div class="text-xs uppercase tracking-widest text-market-muted mb-2 font-medium">Active Inventory</div>
+            <div class="text-2xl lg:text-3xl font-mono font-bold text-market-accent flex items-baseline gap-2">
+                {{ my_products.count|default:"0" }}
+                <span class="text-xs font-sans text-market-muted font-normal uppercase tracking-widest">Listings</span>
+            </div>
+            <div class="mt-4 text-[11px] text-market-sys flex items-center gap-1 font-medium">
+                <button onclick="switchTab('listings')" class="hover:underline flex items-center gap-1">
+                    <span>Manage Catalog</span>
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="bg-market-surface border border-market-border rounded-xl p-6 lg:p-8 space-y-6 shadow-lg">
+        <div class="flex justify-between items-center border-b border-market-border pb-4">
+            <h2 class="text-sm uppercase tracking-widest text-market-accent font-bold">Recent Orders</h2>
+            <button onclick="switchTab('orders')" class="text-xs text-market-sys hover:underline uppercase tracking-wider font-medium">View All Orders</button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="market-table min-w-[700px] w-full">
+                <thead>
+                    <tr>
+                        <th class="pl-4">Order ID</th>
+                        <th>Product</th>
+                        <th>Buyer</th>
+                        <th>Status</th>
+                        <th class="text-right pr-4">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs text-market-text divide-y divide-market-border">
+                    {% for o in received_orders|slice:":5" %}
+                    <tr class="hover:bg-market-surfaceHover transition-colors">
+                        <td class="pl-4 font-mono text-market-muted">#{{ o.id }}</td>
+                        <td class="font-medium">{{ o.product.name }}</td>
+                        <td class="font-mono text-market-sys">{{ o.buyer.username }}</td>
+                        <td>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider {% if o.status == 'PAID' %}bg-market-successBg text-market-success border border-market-success/30{% elif o.status == 'PENDING' %}bg-market-warningBg text-market-warning border border-market-warning/30{% else %}bg-market-surfaceHover text-market-muted border border-market-border{% endif %}">
+                                {{ o.status }}
+                            </span>
+                        </td>
+                        <td class="text-right pr-4 font-mono font-bold">{{ o.total_price_xmr }} XMR</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-16 text-market-muted uppercase tracking-widest text-xs">No Recent Orders</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

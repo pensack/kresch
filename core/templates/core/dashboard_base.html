@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Market - {% block title %}Terminal{% endblock %}</title>
+    <title>The Market - {% block title %}Dashboard{% endblock %}</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,22 +21,22 @@
                     },
                     colors: {
                         market: {
-                            bg: '#030303',
-                            surface: '#0d0d0d',
-                            surfaceHover: '#141414',
-                            border: '#222222',
-                            borderFocus: '#444444',
-                            text: '#ececec',
-                            muted: '#7a7a7a',
+                            bg: '#0a0a0a',
+                            surface: '#121212',
+                            surfaceHover: '#1a1a1a',
+                            border: '#262626',
+                            borderFocus: '#404040',
+                            text: '#f2f2f2',
+                            muted: '#8c8c8c',
                             accent: '#ffffff',
-                            danger: '#ff4d4d',
-                            dangerBg: '#1a0505',
-                            warning: '#ffcc00',
-                            warningBg: '#1a1500',
-                            success: '#00cc66',
-                            successBg: '#001a0d',
-                            sys: '#4d9aff',
-                            sysBg: '#001429',
+                            danger: '#ef4444',
+                            dangerBg: '#1f0d0d',
+                            warning: '#f59e0b',
+                            warningBg: '#1f170d',
+                            success: '#10b981',
+                            successBg: '#0d1f17',
+                            sys: '#3b82f6',
+                            sysBg: '#0d1527',
                         }
                     }
                 }
@@ -49,31 +49,31 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-market-bg text-market-text font-sans antialiased text-[13px] leading-relaxed selection:bg-market-text selection:text-market-bg h-screen flex flex-col overflow-hidden">
+<body class="bg-market-bg text-market-text font-sans antialiased text-sm leading-relaxed selection:bg-market-text selection:text-market-bg h-screen flex flex-col overflow-hidden">
 
-<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg">
+<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg shadow-2xl">
     
     <!-- Top Header -->
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-market-border bg-market-surface shrink-0 z-20 relative">
-        <div class="flex items-center gap-4 px-5 py-3 border-b sm:border-b-0 sm:border-r border-market-border w-full sm:w-auto h-full">
-            <button id="mobile-menu-btn" class="lg:hidden text-market-muted hover:text-market-text transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+    <header class="flex justify-between items-center border-b border-market-border bg-market-surface/80 backdrop-blur-md px-4 lg:px-6 py-3 shrink-0 z-30 sticky top-0">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-btn" class="lg:hidden text-market-muted hover:text-market-text transition-colors p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-market-borderFocus">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="6" x2="21" y2="6"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
             </button>
-            <div class="font-medium text-base tracking-widest text-market-accent flex items-center gap-3">
+            <div class="font-bold text-base tracking-widest text-market-accent flex items-center gap-3">
                 THE MARKET
-                <span class="border-l border-market-border pl-3 text-market-muted font-normal text-[10px] uppercase tracking-[0.2em] hidden sm:block text-market-accent opacity-70">{% block role_label %}PORTAL{% endblock %}</span>
+                <span class="border-l border-market-border pl-3 text-market-muted font-normal text-xs uppercase tracking-[0.2em] hidden sm:block text-market-accent opacity-80">{% block role_label %}PORTAL{% endblock %}</span>
             </div>
         </div>
 
         {% block top_ticker %}{% endblock %}
 
-        <div class="flex items-center h-full gap-4 px-6 border-l border-market-border">
-            <a href="{% url 'notifications' %}" class="relative group">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-market-muted group-hover:text-market-text transition-colors">
+        <div class="flex items-center gap-4 border-l border-market-border pl-4 lg:pl-6">
+            <a href="{% url 'notifications' %}" class="relative group p-1 text-market-muted hover:text-market-text transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
@@ -82,14 +82,19 @@
         </div>
     </header>
 
-    <!-- Main Layout -->
-    <div class="flex flex-grow relative overflow-hidden">
+    <!-- Main Layout Container -->
+    <div class="flex flex-grow relative overflow-hidden w-full">
         
-        <aside id="sidebar" class="sidebar-transition sidebar-hidden lg:transform-none absolute lg:relative z-10 w-64 h-full border-r border-market-border bg-[#080808] flex flex-col shrink-0">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity duration-300 opacity-0"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 border-r border-market-border bg-market-surface lg:bg-transparent lg:static lg:inset-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 mt-[57px] lg:mt-0 h-[calc(100vh-57px)] lg:h-auto">
             {% block sidebar %}{% endblock %}
         </aside>
 
-        <main class="flex-grow flex flex-col min-w-0 bg-market-bg overflow-y-auto">
+        <!-- Main Content Area -->
+        <main class="flex-grow flex flex-col min-w-0 bg-market-bg overflow-y-auto w-full relative">
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -100,68 +105,117 @@
     // Global Tab Logic
     function switchTab(tabId, updateHash = true) {
         const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(content => content.classList.remove('active'));
+        contents.forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none';
+        });
 
         const buttons = document.querySelectorAll('.tab-btn');
         buttons.forEach(btn => {
-            btn.classList.remove('text-market-accent', 'border-l-market-text', 'bg-market-surfaceHover');
+            btn.classList.remove('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium');
             btn.classList.add('text-market-muted', 'border-l-transparent');
         });
 
         const activeTab = document.getElementById('tab-' + tabId);
-        if (activeTab) activeTab.classList.add('active');
+        if (activeTab) {
+            activeTab.classList.add('active');
+            activeTab.style.display = 'flex';
+        }
 
         const activeBtn = document.getElementById('tab-btn-' + tabId);
         if (activeBtn) {
             activeBtn.classList.remove('text-market-muted', 'border-l-transparent');
-            activeBtn.classList.add('text-market-accent', 'border-l-market-text', 'bg-market-surfaceHover');
+            activeBtn.classList.add('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium');
         }
 
         if (updateHash) {
             window.location.hash = tabId;
         }
 
+        // Close mobile sidebar on tab selection
         if (window.innerWidth <= 1024) {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) sidebar.classList.add('sidebar-hidden');
+            toggleSidebar(false);
         }
     }
 
     function openModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.add('hidden');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
     }
 
-    // Handle hash on load
-    window.addEventListener('load', () => {
+    // Sidebar Toggle Function
+    function toggleSidebar(forceOpen) {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        
+        if (!sidebar || !backdrop) return;
+
+        const isOpen = forceOpen !== undefined ? forceOpen : sidebar.classList.contains('-translate-x-full');
+
+        if (isOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+            setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+            document.body.style.overflow = 'hidden';
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.remove('opacity-100');
+            setTimeout(() => backdrop.classList.add('hidden'), 300);
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => toggleSidebar());
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', () => toggleSidebar(false));
+        }
+
+        // Handle hash on load
         const hash = window.location.hash.substring(1);
         if (hash) {
             switchTab(hash, false);
+        } else {
+            // Default to overview if no hash
+            switchTab('overview', false);
         }
-    });
 
-    // Sidebar Toggle
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const sidebar = document.getElementById('sidebar');
-
-    if (mobileMenuBtn && sidebar) {
-        mobileMenuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('sidebar-hidden');
-        });
-
+        // Window resize handler
         window.addEventListener('resize', () => {
             if (window.innerWidth > 1024) {
-                sidebar.classList.remove('sidebar-hidden');
-            } else if (!sidebar.classList.contains('sidebar-hidden')) {
-                sidebar.classList.add('sidebar-hidden');
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebar-backdrop');
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (backdrop) {
+                    backdrop.classList.add('hidden', 'opacity-0');
+                    document.body.style.overflow = '';
+                }
+            } else {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar(false);
+                }
             }
         });
-    }
+    });
 </script>
 {% block extra_js %}{% endblock %}
 </body>
