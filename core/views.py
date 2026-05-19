@@ -132,7 +132,7 @@ def seller_dashboard(request):
             digital_content=request.POST.get('digital_content', ''),
             usage_instructions=request.POST.get('usage_instructions', ''),
             image=request.FILES.get('image'),
-            status='PENDING'
+            status='PENDING' if request.user.verification_status == 'VERIFIED' else 'DRAFT'
         )
         return redirect('seller_dashboard')
         
@@ -272,6 +272,48 @@ def mod_dashboard(request):
     if request.user.role not in ['MODERATOR', 'ADMIN']:
         return render(request, '404.html', {'reason': 'Insufficient terminal clearance.'}, status=404)
     
+    if request.method == 'POST':
+        batch_ids_raw = request.POST.get('batch_user_ids', '')
+        batch_action = request.POST.get('batch_action')
+        batch_notes = request.POST.get('batch_notes', '')
+        
+        try:
+            ids = [int(x.strip('# ')) for x in batch_ids_raw.split(',') if x.strip('# ')]
+            target_users = User.objects.filter(id__in=ids)
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            for tu in target_users:
+                if batch_action == 'BAN_PERMANENT':
+                    tu.ban_status = 'PERMANENT'
+                    tu.ban_expires_at = None
+                    tu.ban_reason = batch_notes
+                    tu.save()
+                    Product.objects.filter(vendor=tu).update(status='SUSPENDED')
+                elif batch_action == 'BAN_PAUSE_1M':
+                    tu.ban_status = 'PAUSED'
+                    tu.ban_expires_at = timezone.now() + timedelta(days=30)
+                    tu.ban_reason = batch_notes
+                    tu.save()
+                    Product.objects.filter(vendor=tu).update(status='SUSPENDED')
+                elif batch_action == 'VERIFY_APPROVE' and tu.role == 'VENDOR':
+                    tu.verification_status = 'VERIFIED'
+                    tu.verification_notes = batch_notes
+                    tu.verified_by = request.user
+                    tu.verification_reviewed_at = timezone.now()
+                    tu.save()
+                    Product.objects.filter(vendor=tu, status='DRAFT').update(status='PENDING')
+                elif batch_action == 'VERIFY_REVOKE' and tu.role == 'VENDOR':
+                    tu.verification_status = 'UNVERIFIED'
+                    tu.verification_notes = batch_notes
+                    tu.verified_by = None
+                    tu.save()
+                    Product.objects.filter(vendor=tu, status='ACTIVE').update(status='PENDING')
+        except Exception as e:
+            pass
+            
+        return redirect('mod_dashboard')
+        
     users = User.objects.all().order_by('-date_joined')
     from django.db.models import Count
     products = Product.objects.all().select_related('vendor', 'category').annotate(orders_count=Count('order'))
@@ -369,6 +411,41 @@ def mod_manage_product(request, product_id):
     return redirect('mod_dashboard')
 
 @login_required
+def mod_batch_manage_products(request):
+    if request.user.role not in ['MODERATOR', 'ADMIN']:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        notes = request.POST.get('notes', 'Batch action executed by moderator.')
+        product_ids = request.POST.getlist('product_ids')
+        
+        products = Product.objects.filter(id__in=product_ids)
+        for product in products:
+            if action == 'APPROVE':
+                product.status = 'ACTIVE'
+                product.mod_notes = notes
+                product.save()
+                Notification.objects.create(user=product.vendor, title="Product Approved", content=f"Your listing '{product.name}' has been approved.", link=f"/product/{product.id}/")
+            elif action == 'REJECT':
+                product.status = 'REJECTED'
+                product.mod_notes = notes
+                product.save()
+                Notification.objects.create(user=product.vendor, title="Listing Rejected", content=f"Your listing '{product.name}' was rejected. Reason: {notes}", link="/seller/#listings")
+            elif action == 'TAKE_DOWN_FIX':
+                product.status = 'FIX_REQUIRED'
+                product.mod_notes = notes
+                product.save()
+                Notification.objects.create(user=product.vendor, title="Listing Suspended (Fix Required)", content=f"Your listing '{product.name}' was taken down. Reason: {notes}", link="/seller/#listings")
+            elif action == 'TAKE_DOWN_PERM':
+                product.status = 'SUSPENDED'
+                product.mod_notes = notes
+                product.save()
+                Notification.objects.create(user=product.vendor, title="Listing Permanently Suspended", content=f"Your listing '{product.name}' has been permanently removed. Reason: {notes}", link="/seller/#listings")
+                
+    return redirect('mod_dashboard')
+
+@login_required
 def manage_category(request):
     if request.user.role not in ['MODERATOR', 'ADMIN']:
         return JsonResponse({'error': 'Unauthorized'}, status=403)
@@ -404,7 +481,7 @@ def mod_verify_vendor(request, vendor_id):
             vendor.verification_reviewed_at = timezone.now()
             vendor.save()
             
-            Product.objects.filter(vendor=vendor, status='PENDING').update(status='ACTIVE')
+            Product.objects.filter(vendor=vendor, status='DRAFT').update(status='PENDING')
             
             Notification.objects.create(
                 user=vendor,

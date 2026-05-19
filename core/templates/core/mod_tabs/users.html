@@ -1,115 +1,385 @@
-<!-- TAB: USERS -->
-<div id="tab-users" class="tab-content flex-grow flex flex-col">
-    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
-        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Registered Identities</span>
-        <div class="flex gap-2">
-            <input type="text" placeholder="Search UID or Handle..." class="bg-market-bg border border-market-border px-3 py-1 text-[11px] outline-none focus:border-market-sys transition-colors">
+<!-- TAB: USER DIRECTORY & AUDITS -->
+<div id="tab-users" class="tab-content hidden flex-grow flex flex-col p-4 lg:p-8 lg:max-w-7xl mx-auto w-full space-y-6 animate-fade-in">
+    
+    <!-- Header & Core Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-market-border pb-6 shrink-0">
+        <div>
+            <h1 class="text-lg lg:text-xl font-display font-bold uppercase tracking-[0.25em] text-market-accent">User Directory & Governance Audits</h1>
+            <p class="text-xs text-market-muted tracking-widest mt-1">Comprehensive Identity Vault, Reputation Tracking & Platform Sanctions</p>
+        </div>
+        <div class="w-full sm:w-auto flex flex-wrap gap-3 items-center">
+            <!-- Feature 17: Export User Directory CSV -->
+            <button onclick="exportUserCSV()" class="flex-grow sm:flex-grow-0 bg-market-surfaceHover border border-market-border text-market-text hover:bg-market-borderFocus px-5 py-2.5 text-xs uppercase tracking-widest font-bold transition-all rounded-xl shadow flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 text-market-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Export CSV</span>
+            </button>
+            <!-- Feature 18 & 19: Batch Governance Triggers -->
+            <button onclick="openModal('batch-user-modal')" class="flex-grow sm:flex-grow-0 bg-market-danger/20 border border-market-danger/40 text-market-danger hover:bg-market-danger hover:text-white px-6 py-2.5 text-xs uppercase tracking-widest font-bold transition-all rounded-xl shadow-lg flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <span>Batch Sanctions</span>
+            </button>
         </div>
     </div>
 
-    <div class="flex-grow overflow-auto">
-        <table class="market-table min-w-[1000px]">
-            <thead>
-                <tr>
-                    <th class="pl-6">UID</th>
-                    <th>Public Handle</th>
-                    <th>Designation</th>
-                    <th>Joined At</th>
-                    <th>Status</th>
-                    <th class="text-right pr-6">Directives</th>
-                </tr>
-            </thead>
-            <tbody class="text-[12px] text-market-text">
-                {% for u in users %}
-                <tr class="hover:bg-market-surface/50 transition-colors cursor-pointer group" onclick="openUserDossier('{{ u.username }}', '{{ u.display_name }}', '{{ u.role }}', '{{ u.date_joined|date:'F d, Y' }}', '{{ u.given_feedback.count }}')">
-                    <td class="pl-6 font-mono text-market-sys">{{ u.username }}</td>
-                    <td class="group-hover:text-white transition-colors">{{ u.display_name }}</td>
-                    <td>
-                        <span class="status-badge {% if u.role == 'VENDOR' %}bg-market-sysBg text-market-sys border border-market-sys/30{% else %}bg-market-surface text-market-muted border border-market-border{% endif %}">
-                            {{ u.role }}
-                        </span>
-                    </td>
-                    <td class="text-market-muted">{{ u.date_joined|date:"Y-m-d H:i" }}</td>
-                    <td><span class="text-market-success uppercase text-[9px] tracking-widest">Active</span></td>
-                    <td class="text-right pr-6 space-x-4">
-                        <button class="text-market-muted hover:text-market-warning underline uppercase tracking-widest text-[9px] stop-propagation">Freeze</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Feature 11 & 12: User Demographics & Inventory Metrics HUD -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+        <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Total Registered</span>
+            <div class="text-2xl font-display font-bold text-market-accent mt-2">{{ users.count }}</div>
+        </div>
+        <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-sys">Active Merchants</span>
+            <div class="text-2xl font-display font-bold text-market-sys mt-2">{% filter length %}{% for u in users %}{% if u.role == 'VENDOR' and u.verification_status == 'VERIFIED' %}1{% endif %}{% endfor %}{% endfilter %}</div>
+        </div>
+        <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-warning">Pending Review</span>
+            <div class="text-2xl font-display font-bold text-market-warning mt-2">{{ pending_vendors.count }}</div>
+        </div>
+        <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-danger">Sanctioned / Paused</span>
+            <div class="text-2xl font-display font-bold text-market-danger mt-2">{% filter length %}{% for u in users %}{% if u.ban_status != 'NONE' %}1{% endif %}{% endfor %}{% endfilter %}</div>
+        </div>
+    </div>
+
+    <!-- Feature 1, 2, 3, 4, 5: Advanced Multi-Facet Filter HUD -->
+    <div class="bg-market-surface border border-market-border p-4 rounded-2xl shadow-xl flex flex-col gap-4 shrink-0 backdrop-blur-xl">
+        <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <!-- Feature 1: Exact ID Lookup & Feature 2: Fuzzy Username Search -->
+            <div class="w-full md:w-96 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-market-muted">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" id="user-search" onkeyup="filterUserTable()" class="w-full bg-market-bg border border-market-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-market-text outline-none focus:border-market-borderFocus transition-all shadow-inner" placeholder="Search by exact ID (e.g. #123) or username...">
+            </div>
+            <!-- Feature 3: Role Segmented Control -->
+            <div class="w-full md:w-auto flex gap-1 overflow-x-auto bg-market-bg p-1 rounded-xl border border-market-border shadow-inner">
+                <button onclick="filterUserRole('ALL')" class="user-role-btn active px-4 py-2 rounded-lg bg-market-surfaceHover border border-market-border text-xs uppercase tracking-widest text-market-accent font-bold shrink-0 shadow">All Roles</button>
+                <button onclick="filterUserRole('VENDOR')" class="user-role-btn px-4 py-2 rounded-lg bg-transparent border border-transparent text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Vendors</button>
+                <button onclick="filterUserRole('BUYER')" class="user-role-btn px-4 py-2 rounded-lg bg-transparent border border-transparent text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Buyers</button>
+                <button onclick="filterUserRole('STAFF')" class="user-role-btn px-4 py-2 rounded-lg bg-transparent border border-transparent text-xs uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Staff</button>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-center justify-between pt-3 border-t border-market-border/60">
+            <!-- Feature 4: Verification Status Filter -->
+            <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-market-muted shrink-0">Verification:</span>
+                <button onclick="filterUserVer('ALL')" class="user-ver-btn active px-3 py-1.5 rounded-lg bg-market-surfaceHover border border-market-border text-[11px] uppercase tracking-widest text-market-accent font-bold shrink-0">All</button>
+                <button onclick="filterUserVer('VERIFIED')" class="user-ver-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Verified</button>
+                <button onclick="filterUserVer('PENDING')" class="user-ver-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Pending</button>
+                <button onclick="filterUserVer('UNVERIFIED')" class="user-ver-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Unverified</button>
+            </div>
+            <!-- Feature 5: Ban Status Filter -->
+            <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-market-muted shrink-0">Lockout Status:</span>
+                <button onclick="filterUserBan('ALL')" class="user-ban-btn active px-3 py-1.5 rounded-lg bg-market-surfaceHover border border-market-border text-[11px] uppercase tracking-widest text-market-accent font-bold shrink-0">All</button>
+                <button onclick="filterUserBan('NONE')" class="user-ban-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Active</button>
+                <button onclick="filterUserBan('PAUSED')" class="user-ban-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Paused</button>
+                <button onclick="filterUserBan('PERMANENT')" class="user-ban-btn px-3 py-1.5 rounded-lg bg-transparent border border-transparent text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text shrink-0">Permanent Ban</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Directory Table Container -->
+    <div class="bg-market-surface border border-market-border rounded-2xl shadow-2xl overflow-hidden flex-grow flex flex-col backdrop-blur-xl">
+        <div class="overflow-x-auto flex-grow">
+            <table class="market-table min-w-[1200px] w-full" id="users-table">
+                <thead>
+                    <tr class="border-b border-market-border bg-market-surfaceHover/50">
+                        <th class="pl-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">User ID</th>
+                        <th class="py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Identity & Contact</th>
+                        <th class="py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Role & Status</th>
+                        <th class="py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Cryptographic Keys</th>
+                        <th class="py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Activity & Timestamps</th>
+                        <th class="py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Governance Notes</th>
+                        <th class="text-right pr-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs text-market-text divide-y divide-market-border/60" id="user-table-body">
+                    {% for u in users %}
+                    <tr class="hover:bg-market-surfaceHover/80 transition-colors user-row group" data-id="#{{ u.id }}" data-name="{{ u.username|lower }} {{ u.display_name|lower }}" data-role="{% if u.role in 'MODERATOR,ADMIN' %}STAFF{% else %}{{ u.role }}{% endif %}" data-ver="{{ u.verification_status }}" data-ban="{{ u.ban_status }}">
+                        <td class="pl-6 font-mono font-bold text-market-muted">#{{ u.id }}</td>
+                        <td>
+                            <div class="space-y-1 py-2">
+                                <div class="font-bold text-market-accent text-sm flex items-center gap-2">
+                                    <span>{{ u.display_name|default:u.username }}</span>
+                                    {% if u.display_name %}<span class="text-[10px] font-mono text-market-muted">(@{{ u.username }})</span>{% endif %}
+                                </div>
+                                <div class="text-[11px] font-mono text-market-muted">{{ u.email }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-bg border border-market-border text-market-muted shadow-inner">{{ u.role }}</span>
+                                    {% if u.role == 'VENDOR' %}
+                                        {% if u.verification_status == 'VERIFIED' %}
+                                        <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-successBg border border-market-success/30 text-market-success shadow">Verified</span>
+                                        {% elif u.verification_status == 'PENDING' %}
+                                        <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-sysBg border border-market-sys/30 text-market-sys animate-pulse shadow">Pending</span>
+                                        {% else %}
+                                        <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-bg border border-market-border text-market-muted shadow-inner">{{ u.verification_status }}</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <!-- Feature 5: Ban Status Indicator -->
+                                <div>
+                                    {% if u.ban_status == 'PERMANENT' %}
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-dangerBg border border-market-danger/30 text-market-danger shadow">Permanent Ban</span>
+                                    {% elif u.ban_status == 'PAUSED' %}
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-warningBg border border-market-warning/30 text-market-warning shadow">Paused until {{ u.ban_expires_at|date:"M d" }}</span>
+                                    {% else %}
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest bg-market-successBg border border-market-success/30 text-market-success shadow">Active</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <!-- Feature 15 & 16: Cryptographic Key Validators -->
+                        <td>
+                            <div class="space-y-1 font-mono text-[11px]">
+                                <div class="flex items-center gap-2"><span class="text-market-muted w-14">PGP Key:</span> {% if u.pgp_public_key %}<span class="text-market-success font-bold">Valid</span>{% else %}<span class="text-market-muted">Missing</span>{% endif %}</div>
+                                <div class="flex items-center gap-2"><span class="text-market-muted w-14">XMR Spend:</span> {% if u.xmr_multisig_pubkey %}<span class="text-market-sys font-bold">Configured</span>{% else %}<span class="text-market-muted">Missing</span>{% endif %}</div>
+                            </div>
+                        </td>
+                        <!-- Feature 14: Activity & Registration Timestamps -->
+                        <td>
+                            <div class="space-y-1 font-mono text-[11px] text-market-muted">
+                                <div>Joined: <span class="text-market-text">{{ u.date_joined|date:"M d, Y" }}</span></div>
+                                <div>Last Seen: <span class="text-market-text">{{ u.last_login|date:"M d, Y"|default:"Never" }}</span></div>
+                            </div>
+                        </td>
+                        <!-- Feature 20: Audit Log Notes -->
+                        <td>
+                            <div class="max-w-xs font-mono text-[11px] text-market-muted truncate" title="{{ u.ban_reason|default:u.verification_notes }}">
+                                {{ u.ban_reason|default:u.verification_notes|default:"-" }}
+                            </div>
+                        </td>
+                        <td class="text-right pr-6">
+                            <div class="flex items-center justify-end gap-2">
+                                <!-- Feature 7: Quick Ban / Suspension Trigger -->
+                                <button onclick="openModBanModal({{ u.id }}, '{{ u.username|escapejs }}')" class="bg-market-bg hover:bg-market-danger hover:text-white border border-market-border hover:border-market-danger/50 px-3 py-1.5 rounded-xl text-[11px] text-market-text uppercase tracking-widest font-bold transition-all shadow" title="Suspend / Enforce Lockout">Sanction</button>
+                                
+                                <!-- Feature 9: Manual Verification Override -->
+                                {% if u.role == 'VENDOR' %}
+                                <button onclick="openModVerifyModal({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.verification_status }}', '{{ u.pgp_public_key|escapejs }}', '{{ u.xmr_multisig_pubkey|escapejs }}', '{{ u.verification_proof|escapejs }}')" class="bg-market-bg hover:bg-market-sys hover:text-white border border-market-border hover:border-market-sys/50 px-3 py-1.5 rounded-xl text-[11px] text-market-text uppercase tracking-widest font-bold transition-all shadow" title="Verify / Override Status">Verify</button>
+                                {% endif %}
+
+                                <!-- Feature 13: Direct Moderator Messaging -->
+                                <button onclick="openModMsgModal({{ u.id }}, '{{ u.username|escapejs }}')" class="bg-market-bg hover:bg-market-surfaceHover border border-market-border hover:border-market-borderFocus px-3 py-1.5 rounded-xl text-[11px] text-market-text uppercase tracking-widest font-bold transition-all shadow" title="Send Official Mod Message">Message</button>
+                                
+                                <!-- Feature 10: Role Elevation / Demotion (Admin Only) -->
+                                {% if request.user.role == 'ADMIN' %}
+                                <form action="{% url 'change_role' u.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <select name="role" onchange="this.form.submit()" class="bg-market-surface hover:bg-market-surfaceHover border border-market-border px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold text-market-warning uppercase tracking-widest cursor-pointer outline-none shadow">
+                                        <option value="BUYER" {% if u.role == 'BUYER' %}selected{% endif %}>Buyer</option>
+                                        <option value="VENDOR" {% if u.role == 'VENDOR' %}selected{% endif %}>Vendor</option>
+                                        <option value="MODERATOR" {% if u.role == 'MODERATOR' %}selected{% endif %}>Mod</option>
+                                        <option value="ADMIN" {% if u.role == 'ADMIN' %}selected{% endif %}>Admin</option>
+                                    </select>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-28 text-market-muted uppercase tracking-[0.2em] text-xs font-bold bg-market-surface/30">No Registered Users Found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Modal: User Dossier -->
-<div id="user-dossier-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-market-bg border border-market-border w-full max-w-lg flex flex-col shadow-[0_0_100px_rgba(77,154,255,0.1)]">
-        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
-            <span class="text-[11px] uppercase tracking-widest text-market-sys font-medium">Identity Dossier</span>
-            <button onclick="closeModal('user-dossier-modal')" class="text-market-muted hover:text-market-text">✕</button>
-        </div>
-        
-        <div class="p-8 space-y-8">
-            <div class="flex items-center gap-6">
-                <div class="w-16 h-16 bg-market-surface border border-market-border flex items-center justify-center text-market-sys text-2xl font-bold uppercase" id="dossier-initial">U</div>
-                <div>
-                    <h2 class="text-xl font-medium text-white mb-1" id="dossier-name">User Name</h2>
-                    <div class="font-mono text-market-sys text-[12px]" id="dossier-uid">UID: ########</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-px bg-market-border border border-market-border">
-                <div class="bg-market-surface p-4">
-                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Designation</div>
-                    <div class="text-market-text" id="dossier-role">BUYER</div>
-                </div>
-                <div class="bg-market-surface p-4">
-                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Enlisted Since</div>
-                    <div class="text-market-text" id="dossier-joined">Jan 01, 2026</div>
-                </div>
-                <div class="bg-market-surface p-4">
-                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Feedback Emitted</div>
-                    <div class="text-market-text" id="dossier-feedback">0 Ratings</div>
-                </div>
-                <div class="bg-market-surface p-4">
-                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Total Spent</div>
-                    <div class="text-market-muted italic">Access Restricted</div>
-                </div>
-            </div>
-
+<!-- Modal: Feature 9 Manual Verification Override HUD -->
+<div id="mod-verify-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-2xl rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
             <div>
-                <h3 class="text-[10px] text-market-muted uppercase tracking-widest mb-4">Transaction History</h3>
-                <div class="border border-market-border bg-market-bg p-10 text-center text-market-muted text-[11px] uppercase tracking-widest italic opacity-40">
-                    Encrypted Ledger Offline
+                <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Manual Verification Override HUD</h3>
+                <p id="verify-vendor-name" class="text-xs text-market-muted mt-1 font-bold">Managing Vendor #...</p>
+            </div>
+            <button onclick="closeModal('mod-verify-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form id="mod-verify-form" method="POST" class="p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
+            {% csrf_token %}
+            <div class="bg-market-bg p-5 rounded-2xl border border-market-border font-mono text-xs text-market-muted space-y-3 shadow-inner">
+                <div><strong class="text-market-text">PGP Public Key:</strong> <p id="verify-pgp" class="whitespace-pre-wrap break-all mt-1 bg-market-surface p-3 rounded-xl border border-market-border text-[11px]"></p></div>
+                <div><strong class="text-market-text">Monero Spend Key:</strong> <p id="verify-xmr" class="whitespace-pre-wrap break-all mt-1 bg-market-surface p-3 rounded-xl border border-market-border text-[11px]"></p></div>
+                <div><strong class="text-market-accent block mb-1">Submitted Proof / Links:</strong> <p id="verify-proof" class="whitespace-pre-wrap break-all bg-market-surface p-3 rounded-xl border border-market-border text-[11px] text-market-text"></p></div>
+            </div>
+            <div>
+                <label class="form-label text-market-text">Moderator Audit Notes / Rejection Reason</label>
+                <input type="text" name="notes" placeholder="Optional notes or reason for rejection/revocation..." class="form-input rounded-xl text-xs">
+            </div>
+            <div class="pt-4 border-t border-market-border flex flex-wrap justify-end gap-3">
+                <button type="button" onclick="closeModal('mod-verify-modal')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" name="action" value="REVOKE" class="bg-market-warning text-market-warningBg hover:bg-white px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow">Revoke</button>
+                <button type="submit" name="action" value="REJECT" class="bg-market-danger text-white hover:bg-white hover:text-market-danger px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow">Reject</button>
+                <button type="submit" name="action" value="APPROVE" class="bg-market-success text-market-successBg hover:bg-white px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow">Approve</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Feature 13 Direct Moderator Messaging HUD -->
+<div id="mod-msg-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-lg rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Official Moderator Dispatch</h3>
+                <p id="msg-user-name" class="text-xs text-market-muted mt-1 font-bold">Dispatching to User #...</p>
+            </div>
+            <button onclick="closeModal('mod-msg-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form action="{% url 'send_message' %}" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="recipient" id="msg-recipient-input">
+            <div>
+                <label class="form-label text-market-text">Official Message / Warning *</label>
+                <textarea name="content" rows="4" required class="form-input rounded-xl text-xs" placeholder="Type official notification, warning, or inquiry..."></textarea>
+            </div>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-3">
+                <button type="button" onclick="closeModal('mod-msg-modal')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-sys text-white px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow">Send Dispatch</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Feature 18 & 19 Batch Governance Sanctions HUD -->
+<div id="batch-user-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-danger/50 w-full max-w-lg rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-danger font-bold">Batch Governance Sanctions HUD</h3>
+                <p class="text-xs text-market-muted mt-1 font-bold">Enforce platform lockouts or verification overrides across multiple accounts</p>
+            </div>
+            <button onclick="closeModal('batch-user-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form action="{% url 'mod_dashboard' %}" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label text-market-text">Target User IDs (Comma separated) *</label>
+                    <input type="text" name="batch_user_ids" required class="form-input rounded-xl font-mono text-xs" placeholder="e.g. 1, 2, 5, 12">
+                </div>
+                <div>
+                    <label class="form-label text-market-danger font-bold">Batch Action Trigger</label>
+                    <select name="batch_action" class="form-input rounded-xl cursor-pointer text-xs bg-market-bg">
+                        <option value="BAN_PERMANENT">Enforce Permanent Lockout</option>
+                        <option value="BAN_PAUSE_1M">Enforce Temporary Pause (1 Month)</option>
+                        <option value="VERIFY_APPROVE">Batch Approve Verification</option>
+                        <option value="VERIFY_REVOKE">Batch Revoke Verification</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label text-market-text">Audit Log Explanation *</label>
+                    <textarea name="batch_notes" rows="3" required class="form-input rounded-xl text-xs" placeholder="Reason for batch sanction or verification override..."></textarea>
                 </div>
             </div>
-
-            <div class="flex gap-4 pt-4">
-                <button class="flex-grow border border-market-warning text-market-warning py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-warning/10 transition-all">
-                    Freeze Account
-                </button>
-                <button class="flex-grow border border-market-danger text-market-danger py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-danger/10 transition-all">
-                    Flag for Expungement
-                </button>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-3">
+                <button type="button" onclick="closeModal('batch-user-modal')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-danger text-white px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow">Execute Batch Sanction</button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
 <script>
-    function openUserDossier(uid, name, role, joined, feedback) {
-        document.getElementById('dossier-uid').innerText = 'UID: ' + uid;
-        document.getElementById('dossier-name').innerText = name;
-        document.getElementById('dossier-role').innerText = role;
-        document.getElementById('dossier-joined').innerText = joined;
-        document.getElementById('dossier-feedback').innerText = feedback + ' Ratings';
-        document.getElementById('dossier-initial').innerText = name.charAt(0);
-        
-        document.getElementById('user-dossier-modal').classList.remove('hidden');
+    function filterUserTable() {
+        const query = document.getElementById('user-search').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('.user-row');
+        rows.forEach(row => {
+            const id = row.getAttribute('data-id').toLowerCase();
+            const name = row.getAttribute('data-name').toLowerCase();
+            if (id === query || id.includes(query) || name.includes(query)) row.style.display = '';
+            else row.style.display = 'none';
+        });
     }
 
-    // Stop propagation for action buttons so they don't trigger the modal
-    document.querySelectorAll('.stop-propagation').forEach(btn => {
-        btn.addEventListener('click', (e) => e.stopPropagation());
-    });
+    function filterUserRole(role) {
+        document.querySelectorAll('.user-role-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+            btn.classList.add('bg-transparent', 'text-market-muted');
+        });
+        event.target.classList.remove('bg-transparent', 'text-market-muted');
+        event.target.classList.add('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+
+        const rows = document.querySelectorAll('.user-row');
+        rows.forEach(row => {
+            if (role === 'ALL' || row.getAttribute('data-role') === role) row.style.display = '';
+            else row.style.display = 'none';
+        });
+    }
+
+    function filterUserVer(ver) {
+        document.querySelectorAll('.user-ver-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+            btn.classList.add('bg-transparent', 'text-market-muted');
+        });
+        event.target.classList.remove('bg-transparent', 'text-market-muted');
+        event.target.classList.add('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+
+        const rows = document.querySelectorAll('.user-row');
+        rows.forEach(row => {
+            if (ver === 'ALL' || row.getAttribute('data-ver') === ver) row.style.display = '';
+            else row.style.display = 'none';
+        });
+    }
+
+    function filterUserBan(ban) {
+        document.querySelectorAll('.user-ban-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+            btn.classList.add('bg-transparent', 'text-market-muted');
+        });
+        event.target.classList.remove('bg-transparent', 'text-market-muted');
+        event.target.classList.add('active', 'bg-market-surfaceHover', 'text-market-accent', 'shadow');
+
+        const rows = document.querySelectorAll('.user-row');
+        rows.forEach(row => {
+            const b = row.getAttribute('data-ban');
+            if (ban === 'ALL') row.style.display = '';
+            else if (ban === 'NONE' && b === 'NONE') row.style.display = '';
+            else if (ban === 'PAUSED' && b === 'PAUSED') row.style.display = '';
+            else if (ban === 'PERMANENT' && b === 'PERMANENT') row.style.display = '';
+            else row.style.display = 'none';
+        });
+    }
+
+    function openModVerifyModal(id, username, ver, pgp, xmr, proof) {
+        document.getElementById('verify-vendor-name').innerText = "Managing Vendor: " + username + " (#" + id + ")";
+        document.getElementById('verify-pgp').innerText = pgp || "No PGP Public Key Provided";
+        document.getElementById('verify-xmr').innerText = xmr || "No Monero Spend Key Provided";
+        document.getElementById('verify-proof').innerText = proof || "No Verification Proof Submitted";
+        document.getElementById('mod-verify-form').action = "/mod/verify/" + id + "/";
+        openModal('mod-verify-modal');
+    }
+
+    function openModMsgModal(id, username) {
+        document.getElementById('msg-user-name').innerText = "Dispatching to User: " + username + " (#" + id + ")";
+        document.getElementById('msg-recipient-input').value = username;
+        openModal('mod-msg-modal');
+    }
+
+    function exportUserCSV() {
+        let csv = "User ID,Username,Display Name,Email,Role,Verification Status,Ban Status,Joined Date\n";
+        document.querySelectorAll('.user-row').forEach(row => {
+            if (row.style.display !== 'none') {
+                const id = row.getAttribute('data-id');
+                const name = row.getAttribute('data-name');
+                const role = row.getAttribute('data-role');
+                const ver = row.getAttribute('data-ver');
+                const ban = row.getAttribute('data-ban');
+                csv += `"${id}","${name}","","","${role}","${ver}","${ban}",""\n`;
+            }
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'user_governance_audit.csv');
+        a.click();
+    }
 </script>

@@ -35,6 +35,9 @@
     <button onclick="switchTab('bans')" id="tab-btn-bans" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-danger border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
         Vendor Bans & Pauses
     </button>
+    <button onclick="switchTab('users')" id="tab-btn-users" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
+        User Directory & Audits
+    </button>
 </nav>
 {% endblock %}
 
@@ -290,6 +293,7 @@
 </div>
 
 {% include 'core/mod_tabs/products.html' %}
+{% include 'core/mod_tabs/users.html' %}
 
 <script>
     function openModBanModal(vendorId, vendorName) {

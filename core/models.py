@@ -97,6 +97,7 @@ class Product(models.Model):
     image_url = models.URLField(max_length=500, blank=True)
     
     STATUS_CHOICES = (
+        ('DRAFT', 'Unverified Draft'),
         ('PENDING', 'Pending Approval'),
         ('ACTIVE', 'Active / Online'),
         ('REJECTED', 'Rejected'),

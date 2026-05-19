@@ -19,6 +19,7 @@ urlpatterns = [
     path('seller/duplicate/<int:product_id>/', views.duplicate_product, name='duplicate_product'),
     path('seller/export/', views.export_inventory, name='export_inventory'),
     path('mod/product/<int:product_id>/manage/', views.mod_manage_product, name='mod_manage_product'),
+    path('mod/products/batch/', views.mod_batch_manage_products, name='mod_batch_manage_products'),
     path('buyer/', views.buyer_dashboard, name='buyer_dashboard'),
     path('orders/<int:order_id>/', views.order_detail, name='order_detail'),
     path('bookmark/toggle/<int:product_id>/', views.toggle_bookmark, name='toggle_bookmark'),
