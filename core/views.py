@@ -139,11 +139,13 @@ def seller_dashboard(request):
     my_products = Product.objects.filter(vendor=request.user).select_related('category').order_by('-created_at')
     my_orders = Order.objects.filter(product__vendor=request.user).select_related('buyer', 'product').order_by('-created_at')
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('children')
+    pending_count = my_products.filter(status='PENDING').count()
     
     context = {
         'my_products': my_products,
         'my_orders': my_orders,
         'categories': categories,
+        'pending_count': pending_count,
     }
     return render(request, 'core/seller_dashboard.html', context)
 

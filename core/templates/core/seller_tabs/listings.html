@@ -34,7 +34,7 @@
                 </div>
             </div>
             <span class="text-xs font-mono font-bold bg-market-sys text-white px-3 py-1 rounded-full shrink-0 shadow">
-                {% filter length %}{% for p in my_products %}{% if p.status == 'PENDING' %}1{% endif %}{% endfor %}{% endfilter %} Item(s)
+                {{ pending_count }} Item(s)
             </span>
         </div>
 
