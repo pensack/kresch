@@ -1,0 +1,162 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Checkout - Step 2: Payment Protocol{% endblock %}
+
+{% block extra_css %}
+<style>
+    .qr-container {
+        filter: grayscale(1) contrast(1.2);
+    }
+    .copy-status { display: none; }
+    .copy-status.show { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center py-10 px-4 bg-grid">
+    <div class="w-full max-w-4xl">
+        
+        <!-- Progress Bar -->
+        <div class="flex items-center mb-12 px-10">
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-success bg-market-successBg text-market-success flex items-center justify-center font-bold text-xs">✓</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-success whitespace-nowrap">Verification</span>
+            </div>
+            <div class="flex-grow h-px bg-market-success mx-4"></div>
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-text bg-market-text text-market-bg flex items-center justify-center font-bold text-xs">2</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-text whitespace-nowrap">Payment</span>
+            </div>
+            <div class="flex-grow h-px bg-market-border mx-4"></div>
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-border bg-market-bg text-market-muted flex items-center justify-center font-bold text-xs">3</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-muted whitespace-nowrap">Detection</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left: Payment Instructions -->
+            <div class="lg:w-2/3 space-y-6">
+                <div class="bg-market-surface border border-market-border p-8">
+                    <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-8 font-medium border-b border-market-border pb-4">Secure Payment Invoice</h2>
+                    
+                    <div class="space-y-8">
+                        <!-- QR Code -->
+                        <div class="flex justify-center">
+                            <div class="p-4 bg-white qr-container border-4 border-market-border">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=monero:{{ order.escrow_address }}?tx_amount={{ order.total_price_xmr }}" alt="Payment QR" class="w-48 h-48">
+                            </div>
+                        </div>
+
+                        <!-- Address Block -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-3">XMR Subaddress (Stealth)</label>
+                            <div class="flex border border-market-border bg-market-bg relative group">
+                                <input type="text" readonly id="payment-address" value="{{ order.escrow_address }}" class="w-full bg-transparent p-4 text-[13px] font-mono text-market-text outline-none">
+                                <button onclick="copyAddress()" class="px-6 bg-market-surface border-l border-market-border text-market-muted hover:text-market-text hover:bg-market-surfaceHover transition-all text-[11px] uppercase tracking-widest font-medium">Copy</button>
+                                <div id="copy-status" class="absolute -top-8 right-0 bg-market-success text-white px-3 py-1 rounded-sm text-[10px] uppercase tracking-widest font-medium copy-status">Copied to Clipboard</div>
+                            </div>
+                        </div>
+
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-market-bg border border-market-border p-5">
+                                <div class="text-[10px] text-market-muted uppercase tracking-widest mb-1">Total Amount</div>
+                                <div class="text-[20px] font-mono text-market-accent">{{ order.total_price_xmr }} <span class="text-xs text-market-muted">XMR</span></div>
+                            </div>
+                            <div class="bg-market-bg border border-market-border p-5">
+                                <div class="text-[10px] text-market-muted uppercase tracking-widest mb-1">Status</div>
+                                <div class="text-[14px] font-medium text-market-warning uppercase tracking-[0.15em] animate-pulse">Waiting for detection...</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-market-warningBg/20 border border-market-warning/30 p-5">
+                            <ul class="text-[11px] text-market-warning leading-relaxed space-y-2 uppercase tracking-wider">
+                                <li>• Only send XMR to this address.</li>
+                                <li>• This subaddress is unique to your Order #{{ order.id }}.</li>
+                                <li>• Confirmation requires 10 network blocks (approx. 20 mins).</li>
+                            </ul>
+                        </div>
+
+                        <div class="pt-4 text-center">
+                            <a href="{% url 'checkout_step3' order.id %}" class="inline-block text-[11px] text-market-muted hover:text-market-text underline uppercase tracking-widest">Manually check synchronization</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Context -->
+            <div class="lg:w-1/3 space-y-6">
+                <!-- Security Advisory -->
+                <div class="bg-market-sysBg/30 border border-market-sys/40 p-6">
+                    <h2 class="text-[11px] uppercase tracking-widest text-market-sys mb-4 flex items-center gap-2">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        Escrow Advisory
+                    </h2>
+                    
+                    <div class="text-[11px] text-market-text leading-relaxed space-y-4">
+                        {% if order.product.product_type == 'PHYSICAL' %}
+                        <p>Funds are held in the secure **Multisig Vault**. Only release payment after you have physically received and inspected the item.</p>
+                        {% elif order.product.product_type == 'DIGITAL' %}
+                        <p>Payment is synchronized with the digital release. The asset link will be revealed in your terminal once the blockchain confirms your XMR transfer.</p>
+                        {% elif order.product.product_type == 'ACCOUNT' %}
+                        <p class="text-market-warning">**SAFE PROTOCOL:** Once you receive the credentials, log in and **change the master password/email** immediately before finalizing the order.</p>
+                        <p>A Moderator can be requested as a **Trusted Intermediary** for high-value accounts to verify the login before handover.</p>
+                        {% elif order.product.product_type == 'SERVICE' %}
+                        <p>Coordination details will be revealed upon payment. Funds stay in escrow until you confirm the service has been rendered successfully.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="bg-market-surface border border-market-border p-6 sticky top-6">
+                    <h2 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">Trade Context</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-market-muted text-[11px]">Item</span>
+                            <span class="text-market-text text-[11px]">{{ order.product.name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-market-muted text-[11px]">Quantity</span>
+                            <span class="text-market-text text-[11px]">{{ order.quantity }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-market-muted text-[11px]">Security</span>
+                            <span class="text-market-success text-[11px] uppercase">Multi-Sig Escrow</span>
+                        </div>
+                        <div class="pt-4 border-t border-market-border mt-4">
+                            <div class="text-[10px] text-market-muted uppercase tracking-widest mb-2">Internal Memo</div>
+                            <div class="text-[11px] text-market-muted leading-relaxed font-mono opacity-60">
+                                SIG_BLOCK: {{ order.id|stringformat:"08d" }}<br>
+                                PUB_KEY_EXCH: Verified<br>
+                                ESCROW_HASH: {{ order.escrow_address|truncatechars:16 }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyAddress() {
+        const copyText = document.getElementById("payment-address");
+        copyText.select();
+        document.execCommand("copy");
+        
+        const status = document.getElementById("copy-status");
+        status.classList.add("show");
+        setTimeout(() => {
+            status.classList.remove("show");
+        }, 3000);
+    }
+
+    // Auto-refresh logic (Disabled for manual simulation)
+    /*
+    setTimeout(() => {
+        window.location.href = "{% url 'checkout_step3' order.id %}";
+    }, 15000); 
+    */
+</script>
+{% endblock %}

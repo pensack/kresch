@@ -1,0 +1,156 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}Order Terminal #{{ order.id }}{% endblock %}
+{% block role_label %}Transaction Oversight{% endblock %}
+
+{% block content %}
+<div class="p-8 space-y-8 max-w-6xl mx-auto">
+    <!-- Top Meta HUD -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-market-border pb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-[11px] text-market-muted uppercase tracking-[0.3em]">Registry ID</span>
+                <span class="text-[14px] text-market-text font-mono">ORD-{{ order.id|stringformat:"08d" }}</span>
+            </div>
+            <h1 class="text-[24px] font-medium text-market-text tracking-wider uppercase">{{ order.product.name }}</h1>
+        </div>
+        
+        <div class="flex gap-4">
+            <div class="bg-market-surface border border-market-border px-6 py-3 text-center min-w-[140px]">
+                <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Status</div>
+                <div class="text-[12px] font-medium uppercase tracking-widest {% if order.status == 'PAID' or order.status == 'SHIPPED' %}text-market-success{% elif order.status == 'DISPUTED' %}text-market-error{% else %}text-market-text{% endif %}">
+                    {{ order.get_status_display }}
+                </div>
+            </div>
+            <div class="bg-market-surface border border-market-border px-6 py-3 text-center min-w-[140px]">
+                <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Settlement</div>
+                <div class="text-[12px] text-market-accent font-mono">{{ order.total_price_xmr }} XMR</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Detail Dossier -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Context Banner -->
+            {% if order.status == 'PAID' %}
+            <div class="bg-market-successBg/20 border border-market-success/30 p-6 flex items-start gap-4">
+                <div class="p-2 bg-market-success/10 rounded-full">
+                    <svg class="w-5 h-5 text-market-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-[12px] text-market-success uppercase tracking-widest font-bold">Funds Secured</h3>
+                    <p class="text-[11px] text-market-muted leading-relaxed uppercase tracking-wider">The payment has been locked in the 2-of-3 Multisig Escrow. The vendor has been notified to proceed with fulfillment.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payload Section (Conditional) -->
+            <div class="bg-market-surface border border-market-border overflow-hidden">
+                <div class="border-b border-market-border px-6 py-4 bg-market-surfaceHover flex justify-between items-center">
+                    <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-text font-medium">Order Payload</h3>
+                    <span class="text-[9px] text-market-muted uppercase tracking-widest">Post-Payment Access</span>
+                </div>
+                
+                <div class="p-8">
+                    {% if order.product.product_type == 'ACCOUNT' %}
+                        <div class="space-y-6">
+                            <div class="p-6 bg-market-bg border border-market-border font-mono text-[13px] text-market-accent whitespace-pre-wrap">
+{{ order.product.digital_content|default:"[PENDING VENDOR UPLOAD]" }}
+                            </div>
+                            <div class="bg-market-warningBg/10 border border-market-warning/20 p-4 text-[10px] text-market-warning uppercase tracking-widest leading-relaxed">
+                                Security Advisory: Change all credentials immediately upon login. Verify recovery emails and 2FA settings before finalizing escrow.
+                            </div>
+                        </div>
+                    {% elif order.product.product_type == 'DIGITAL' %}
+                        <div class="flex flex-col items-center py-10 space-y-6">
+                            <svg class="w-12 h-12 text-market-muted opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <div class="text-center">
+                                <p class="text-market-text text-[14px] font-medium mb-2">Asset Package Ready</p>
+                                <p class="text-market-muted text-[11px] uppercase tracking-widest mb-6">Signed Payload: {{ order.product.id|stringformat:"04d" }}.zip</p>
+                                <a href="#" class="inline-block bg-market-text text-market-bg px-8 py-3 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all">Download Asset Link</a>
+                            </div>
+                        </div>
+                    {% elif order.product.product_type == 'PHYSICAL' %}
+                        <div class="space-y-8">
+                            <div class="flex items-center gap-10">
+                                <div class="flex-grow space-y-6">
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Tracking Number</label>
+                                        <div class="text-[13px] font-mono text-market-text bg-market-bg border border-market-border px-4 py-3">
+                                            {{ order.tracking_number|default:"AWAITING VENDOR DISPATCH" }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Encrypted Shipping Address</label>
+                                        <div class="text-[11px] font-mono text-market-muted bg-market-bg border border-market-border px-4 py-3 line-clamp-2 opacity-50">
+                                            {{ order.shipping_address_encrypted }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 w-32 h-32 bg-market-bg border border-market-border flex items-center justify-center grayscale opacity-40">
+                                    <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Trade History / Logs -->
+            <div class="bg-market-surface border border-market-border">
+                <div class="border-b border-market-border px-6 py-4 bg-market-surfaceHover">
+                    <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-text font-medium">Transaction Log</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-start gap-4 border-l-2 border-market-success pl-4 py-1">
+                        <div class="text-[11px] text-market-text">Payment Confirmed. Funds held in <span class="text-market-accent">Multisig Wallet</span>.</div>
+                        <span class="ml-auto text-[9px] font-mono text-market-muted">{{ order.created_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                    <div class="flex items-start gap-4 border-l-2 border-market-border pl-4 py-1">
+                        <div class="text-[11px] text-market-muted">Order initiated by Buyer. Registry ID assigned.</div>
+                        <span class="ml-auto text-[9px] font-mono text-market-muted">{{ order.created_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Vendor & Intelligence -->
+        <div class="space-y-8">
+            <div class="bg-market-surface border border-market-border p-6 space-y-6">
+                <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-muted">Vendor Dossier</h3>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-market-bg border border-market-border flex items-center justify-center text-market-text text-lg font-medium">
+                        {{ order.product.vendor.username|first|upper }}
+                    </div>
+                    <div>
+                        <div class="text-[14px] text-market-text font-medium">{{ order.product.vendor.username }}</div>
+                        <div class="text-[10px] text-market-muted uppercase tracking-widest">Level {{ order.product.vendor.vendor_level }} Vendor</div>
+                    </div>
+                </div>
+                <button class="w-full border border-market-border hover:bg-market-surfaceHover py-3 text-[10px] uppercase tracking-[0.2em] text-market-text transition-all">
+                    Secure Message
+                </button>
+            </div>
+
+            <div class="bg-market-sysBg/10 border border-market-sys/20 p-6 space-y-4">
+                <h3 class="text-[10px] uppercase tracking-[0.2em] text-market-sys flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-market-sys rounded-full animate-pulse"></span>
+                    Terminal Actions
+                </h3>
+                <div class="space-y-2">
+                    {% if order.status == 'SHIPPED' or order.product.product_type != 'PHYSICAL' %}
+                    <button class="w-full bg-market-success/10 border border-market-success/30 hover:bg-market-success/20 text-market-success py-3 text-[10px] uppercase tracking-[0.2em] font-bold transition-all">
+                        Finalize & Release Funds
+                    </button>
+                    {% endif %}
+                    <button class="w-full bg-market-error/10 border border-market-error/30 hover:bg-market-error/20 text-market-error py-3 text-[10px] uppercase tracking-[0.2em] font-bold transition-all">
+                        Initiate Dispute
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

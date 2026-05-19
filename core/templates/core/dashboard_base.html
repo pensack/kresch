@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Market - {% block title %}Terminal{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    },
+                    colors: {
+                        market: {
+                            bg: '#030303',
+                            surface: '#0d0d0d',
+                            surfaceHover: '#141414',
+                            border: '#222222',
+                            borderFocus: '#444444',
+                            text: '#ececec',
+                            muted: '#7a7a7a',
+                            accent: '#ffffff',
+                            danger: '#ff4d4d',
+                            dangerBg: '#1a0505',
+                            warning: '#ffcc00',
+                            warningBg: '#1a1500',
+                            success: '#00cc66',
+                            successBg: '#001a0d',
+                            sys: '#4d9aff',
+                            sysBg: '#001429',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/market.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-market-bg text-market-text font-sans antialiased text-[13px] leading-relaxed selection:bg-market-text selection:text-market-bg h-screen flex flex-col overflow-hidden">
+
+<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg">
+    
+    <!-- Top Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-market-border bg-market-surface shrink-0 z-20 relative">
+        <div class="flex items-center gap-4 px-5 py-3 border-b sm:border-b-0 sm:border-r border-market-border w-full sm:w-auto h-full">
+            <button id="mobile-menu-btn" class="lg:hidden text-market-muted hover:text-market-text transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="font-medium text-base tracking-widest text-market-accent flex items-center gap-3">
+                THE MARKET
+                <span class="border-l border-market-border pl-3 text-market-muted font-normal text-[10px] uppercase tracking-[0.2em] hidden sm:block text-market-accent opacity-70">{% block role_label %}PORTAL{% endblock %}</span>
+            </div>
+        </div>
+
+        {% block top_ticker %}{% endblock %}
+
+        <div class="flex items-center h-full gap-4 px-6 border-l border-market-border">
+            <a href="{% url 'notifications' %}" class="relative group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-market-muted group-hover:text-market-text transition-colors">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </a>
+            {% block user_profile %}{% endblock %}
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex flex-grow relative overflow-hidden">
+        
+        <aside id="sidebar" class="sidebar-transition sidebar-hidden lg:transform-none absolute lg:relative z-10 w-64 h-full border-r border-market-border bg-[#080808] flex flex-col shrink-0">
+            {% block sidebar %}{% endblock %}
+        </aside>
+
+        <main class="flex-grow flex flex-col min-w-0 bg-market-bg overflow-y-auto">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+</div>
+
+<script>
+    // Global Tab Logic
+    function switchTab(tabId, updateHash = true) {
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('text-market-accent', 'border-l-market-text', 'bg-market-surfaceHover');
+            btn.classList.add('text-market-muted', 'border-l-transparent');
+        });
+
+        const activeTab = document.getElementById('tab-' + tabId);
+        if (activeTab) activeTab.classList.add('active');
+
+        const activeBtn = document.getElementById('tab-btn-' + tabId);
+        if (activeBtn) {
+            activeBtn.classList.remove('text-market-muted', 'border-l-transparent');
+            activeBtn.classList.add('text-market-accent', 'border-l-market-text', 'bg-market-surfaceHover');
+        }
+
+        if (updateHash) {
+            window.location.hash = tabId;
+        }
+
+        if (window.innerWidth <= 1024) {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.add('sidebar-hidden');
+        }
+    }
+
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // Handle hash on load
+    window.addEventListener('load', () => {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            switchTab(hash, false);
+        }
+    });
+
+    // Sidebar Toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-hidden');
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                sidebar.classList.remove('sidebar-hidden');
+            } else if (!sidebar.classList.contains('sidebar-hidden')) {
+                sidebar.classList.add('sidebar-hidden');
+            }
+        });
+    }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

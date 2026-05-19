@@ -1,0 +1,44 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">Global Orders</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="flex flex-col h-full">
+    <div class="p-6 shrink-0 border-b border-market-border bg-market-surface flex justify-between items-center">
+        <h2 class="text-[11px] uppercase tracking-widest text-market-muted">Platform Order Registry</h2>
+    </div>
+    
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[900px]">
+            <thead>
+                <tr>
+                    <th class="pl-8">Order ID</th>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Vendor</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-right pr-8">Management</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for o in orders %}
+                <tr class="hover:bg-market-surface/40 transition-colors border-b border-market-border/30">
+                    <td class="pl-8 font-mono text-market-muted">#{{ o.id }}</td>
+                    <td class="font-medium">{{ o.product.name }}</td>
+                    <td class="text-market-sys">{{ o.buyer.username }}</td>
+                    <td class="text-market-text">{{ o.product.vendor.username }}</td>
+                    <td class="font-mono text-market-accent">{{ o.amount_due_xmr }} XMR</td>
+                    <td><span class="status-badge bg-black/40">{{ o.status }}</span></td>
+                    <td class="text-right pr-8">
+                        <a href="{% url 'admin_order_manage' o.id %}" class="bg-market-text text-market-bg px-3 py-1 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Manage</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

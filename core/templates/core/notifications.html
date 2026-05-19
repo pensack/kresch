@@ -1,0 +1,56 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}Neural Alerts - Notifications{% endblock %}
+{% block role_label %}System Intelligence{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-4xl mx-auto space-y-8">
+    <div class="flex justify-between items-center border-b border-market-border pb-6">
+        <h2 class="text-[18px] uppercase tracking-[0.2em] text-market-text font-medium">Neural Alert Feed</h2>
+        <span class="text-[10px] text-market-muted uppercase tracking-widest font-mono">{{ notifications.count }} ACTIVE SIGNALS</span>
+    </div>
+
+    <div class="space-y-4">
+        {% for note in notifications %}
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col md:flex-row justify-between gap-6 {% if not note.is_read %}border-market-accent/30{% endif %} transition-all hover:bg-market-surfaceHover group">
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    {% if not note.is_read %}
+                    <span class="w-1.5 h-1.5 bg-market-accent rounded-full animate-pulse"></span>
+                    {% endif %}
+                    <h3 class="text-[14px] text-market-text font-medium uppercase tracking-widest">{{ note.title }}</h3>
+                </div>
+                <p class="text-[12px] text-market-muted leading-relaxed">{{ note.content }}</p>
+                <span class="text-[9px] font-mono text-market-muted uppercase">{{ note.created_at|date:"Y-m-d H:i:s" }}</span>
+            </div>
+            <div class="flex gap-4 items-center shrink-0">
+                {% if note.link %}
+                <a href="{{ note.link }}" class="text-[10px] uppercase tracking-widest text-market-accent hover:underline decoration-market-accent/30 underline-offset-4">Jump to Signal</a>
+                {% endif %}
+                <button onclick="markAsRead('{{ note.id }}', this)" class="text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text">Dismiss</button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="py-20 text-center space-y-4">
+            <div class="text-market-muted uppercase tracking-widest text-[11px] opacity-40">System Silence</div>
+            <p class="text-[10px] text-market-muted uppercase">No active signals detected in the neural feed</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function markAsRead(noteId, btn) {
+        fetch(`/notifications/read/${noteId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const parent = btn.closest('.bg-market-surface');
+                parent.style.opacity = '0.4';
+                parent.classList.remove('border-market-accent/30');
+                btn.remove();
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}Operational Control - Moderator Terminal{% endblock %}
+{% block role_label %}{{ user.role }}{% endblock %}
+
+{% block sidebar %}
+<nav class="flex-grow flex flex-col py-4 gap-1 overflow-y-auto">
+    <div class="px-5 py-2 mb-2">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted font-medium">Control Sector</span>
+    </div>
+    <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-accent border-l-2 border-market-text bg-market-surfaceHover">
+        Orders
+    </button>
+    <button onclick="switchTab('disputes')" id="tab-btn-disputes" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
+        Disputes
+        {% if disputed_orders.count %}
+        <span class="w-2 h-2 bg-market-error rounded-full animate-pulse"></span>
+        {% endif %}
+    </button>
+    <button onclick="switchTab('categories')" id="tab-btn-categories" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all">
+        Categories
+    </button>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- TAB: ORDERS -->
+<div id="tab-orders" class="tab-content active flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Global Order Queue</span>
+    </div>
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[800px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">ID</th>
+                    <th>Buyer</th>
+                    <th>Vendor</th>
+                    <th>Total</th>
+                    <th class="text-right pr-6">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for o in orders %}
+                <tr class="hover:bg-market-surface/50 border-b border-market-border/30 transition-colors">
+                    <td class="pl-6 font-mono text-market-muted">#{{ o.id }}</td>
+                    <td class="text-market-text">{{ o.buyer.username }}</td>
+                    <td class="text-market-sys">{{ o.product.vendor.username }}</td>
+                    <td class="font-mono">{{ o.amount_due_xmr }} XMR</td>
+                    <td><span class="status-badge bg-market-surface">{{ o.status }}</span></td>
+                    <td class="text-right pr-6">
+                        <a href="{% url 'admin_order_manage' o.id %}" class="text-[10px] uppercase tracking-widest text-market-accent hover:underline">Manage</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB: DISPUTES -->
+<div id="tab-disputes" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Conflict Resolution Terminal</span>
+    </div>
+    <div class="p-6 space-y-6 overflow-auto">
+        {% for d in disputed_orders %}
+        <div class="bg-market-surface border border-market-error/30 p-6 flex flex-col md:flex-row justify-between gap-6">
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-market-error font-mono text-[14px]">Order #{{ d.id }}</span>
+                    <span class="text-[9px] uppercase tracking-widest bg-market-error/10 text-market-error px-2 py-0.5 border border-market-error/20">Active Dispute</span>
+                </div>
+                <p class="text-[12px] text-market-text font-medium">{{ d.product.name }}</p>
+                <div class="flex gap-4 text-[10px] text-market-muted uppercase tracking-widest">
+                    <span>Buyer: {{ d.buyer.username }}</span>
+                    <span>Vendor: {{ d.product.vendor.username }}</span>
+                </div>
+            </div>
+            <div class="flex gap-3 items-center">
+                <form action="{% url 'resolve_dispute' d.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="RELEASE">
+                    <button type="submit" class="bg-market-success text-market-bg px-4 py-2 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Release to Vendor</button>
+                </form>
+                <form action="{% url 'resolve_dispute' d.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="REFUND">
+                    <button type="submit" class="bg-market-bg border border-market-error text-market-error px-4 py-2 text-[10px] uppercase tracking-widest font-medium hover:bg-market-error hover:text-white transition-all">Refund Buyer</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="py-20 text-center text-market-muted uppercase tracking-widest text-[11px]">No Active Conflicts Detected</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TAB: CATEGORIES -->
+<div id="tab-categories" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Hierarchy Management</span>
+        <button onclick="openModal('add-category-modal')" class="bg-market-text text-market-bg px-3 py-1.5 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Add Category</button>
+    </div>
+    <div class="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-auto">
+        {% for cat in categories %}
+        <div class="bg-market-surface border border-market-border p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-market-border pb-3">
+                <h3 class="text-[12px] uppercase tracking-[0.2em] text-market-accent font-medium">{{ cat.name }}</h3>
+                <span class="text-[9px] font-mono text-market-muted">{{ cat.children.count }} Sub</span>
+            </div>
+            <div class="space-y-2">
+                {% for sub in cat.children.all %}
+                <div class="flex justify-between items-center text-[11px] text-market-text">
+                    <span>{{ sub.name }}</span>
+                    <button class="text-market-muted hover:text-market-error text-[10px]">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            <button onclick="openSubModal('{{ cat.id }}', '{{ cat.name }}')" class="w-full border border-market-border py-2 text-[9px] uppercase tracking-widest text-market-muted hover:border-market-text hover:text-market-text transition-all">+ Add Subcategory</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal: Add Category -->
+<div id="add-category-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-md p-8">
+        <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-6">Initialize New Sector</h2>
+        <form action="{% url 'manage_category' %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label class="text-[10px] text-market-muted uppercase tracking-widest mb-2 block">Category Name</label>
+                <input type="text" name="name" required class="w-full bg-black/40 border border-market-border p-3 text-market-text outline-none focus:border-market-accent font-mono">
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-grow bg-market-text text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Deploy Category</button>
+                <button type="button" onclick="closeModal('add-category-modal')" class="border border-market-border text-market-muted px-6 py-3 text-[11px] uppercase tracking-widest hover:text-market-text transition-all">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Subcategory -->
+<div id="add-sub-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-md p-8">
+        <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-2">New Sub-Level</h2>
+        <p id="parent-name-display" class="text-[10px] text-market-muted uppercase tracking-widest mb-6">Parent: Sector Name</p>
+        <form action="{% url 'manage_category' %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="parent-id-input">
+            <div>
+                <label class="text-[10px] text-market-muted uppercase tracking-widest mb-2 block">Subcategory Name</label>
+                <input type="text" name="name" required class="w-full bg-black/40 border border-market-border p-3 text-market-text outline-none focus:border-market-accent font-mono">
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-grow bg-market-text text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Append Sub-Sector</button>
+                <button type="button" onclick="closeModal('add-sub-modal')" class="border border-market-border text-market-muted px-6 py-3 text-[11px] uppercase tracking-widest hover:text-market-text transition-all">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openSubModal(parentId, parentName) {
+        document.getElementById('parent-id-input').value = parentId;
+        document.getElementById('parent-name-display').innerText = "Parent: " + parentName;
+        openModal('add-sub-modal');
+    }
+</script>
+{% endblock %}

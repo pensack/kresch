@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Market - {% block title %}Global Index{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    },
+                    colors: {
+                        market: {
+                            bg: '#030303',
+                            surface: '#0d0d0d',
+                            surfaceHover: '#141414',
+                            border: '#222222',
+                            borderFocus: '#444444',
+                            text: '#ececec',
+                            muted: '#7a7a7a',
+                            accent: '#ffffff',
+                            danger: '#ff4d4d',
+                            success: '#00cc66',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/market.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-market-bg text-market-text font-sans antialiased text-[13px] leading-relaxed selection:bg-market-text selection:text-market-bg h-screen flex flex-col overflow-hidden bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iIzIyMiIvPjwvc3ZnPg==')]">
+
+<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+    
+    <!-- Reusable Navbar Component -->
+    {% include 'core/components/navbar.html' %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="mt-auto border-t border-market-border bg-[#080808] py-3 px-5 flex justify-between text-[11px] text-market-muted shrink-0">
+        <div class="flex items-center gap-4 font-mono">
+            <span>Terminal: T-800</span>
+            <span>Latency: 142ms</span>
+        </div>
+        <div class="flex gap-6 uppercase tracking-widest text-[9px]">
+            <a href="#" class="hover:text-market-text transition-colors">Platform PGP</a>
+            <a href="#" class="hover:text-market-text transition-colors">Manifesto</a>
+            <a href="#" class="hover:text-market-text transition-colors">Warrant Canary</a>
+        </div>
+    </footer>
+
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

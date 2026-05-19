@@ -1,0 +1,185 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Global Index{% endblock %}
+
+{% block extra_css %}
+<style>
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+@media (max-width: 1024px) {
+    .sidebar-hidden { transform: translateX(-100%); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sub-Header / Ticker -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-market-border bg-market-surface shrink-0 z-20 relative">
+    <div class="flex items-center gap-4 px-5 py-3 border-b sm:border-b-0 sm:border-r border-market-border w-full sm:w-auto h-full">
+        <button id="mobile-menu-btn" class="lg:hidden text-market-muted hover:text-market-text transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div class="font-medium text-[11px] tracking-widest text-market-muted uppercase flex items-center gap-3">
+            MARKET INDEX
+        </div>
+    </div>
+
+    <div class="hidden md:flex items-center px-6 gap-6 text-[10px] font-mono uppercase tracking-wider text-market-muted flex-grow">
+        <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-market-success rounded-full"></span>
+            <span>Network: Connected</span>
+        </div>
+        <div class="border-l border-market-border pl-6">
+            Active Listings: <span class="text-market-text">14,203</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="flex flex-col border-b border-market-border bg-[#080808] shrink-0">
+    <div class="flex flex-col sm:flex-row border-b border-market-border">
+        <div class="flex-grow flex items-center border-b sm:border-b-0 sm:border-r border-market-border focus-within:bg-[#0a0a0a] transition-colors">
+            <span class="pl-5 pr-3 text-market-muted font-mono text-[11px]">Query:</span>
+            <input type="text" id="main-search" placeholder="Item name, vendor PGP, or keywords..." class="w-full bg-transparent border-none text-market-text py-4 px-2 outline-none font-mono text-[12px] placeholder:text-market-borderFocus placeholder:font-sans transition-colors" autofocus>
+        </div>
+        <div class="flex overflow-x-auto hide-scrollbar">
+            <select class="bg-transparent border-r border-market-border text-market-muted hover:text-market-text hover:bg-market-surface py-4 px-5 outline-none cursor-pointer transition-colors text-[11px] uppercase tracking-wider shrink-0">
+                <option value="all" class="bg-market-surface">Sort: Latest</option>
+                <option value="price_asc" class="bg-market-surface">Price: Low to High</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Top Modality Navigation -->
+    <div class="flex items-center px-6 gap-8 h-12 bg-market-bg overflow-x-auto hide-scrollbar">
+        <a href="{% url 'index' %}" class="text-[10px] uppercase tracking-[0.2em] {% if not request.GET.type %}text-market-accent border-b-2 border-market-text h-full flex items-center mb-[-2px]{% else %}text-market-muted hover:text-market-text{% endif %} transition-all">
+            All Assets
+        </a>
+        <a href="?type=physical" class="text-[10px] uppercase tracking-[0.2em] {% if request.GET.type == 'physical' %}text-market-accent border-b-2 border-market-text h-full flex items-center mb-[-2px]{% else %}text-market-muted hover:text-market-text{% endif %} transition-all">
+            Physical Goods
+        </a>
+        <a href="?type=digital" class="text-[10px] uppercase tracking-[0.2em] {% if request.GET.type == 'digital' %}text-market-accent border-b-2 border-market-text h-full flex items-center mb-[-2px]{% else %}text-market-muted hover:text-market-text{% endif %} transition-all">
+            Digital Goods
+        </a>
+        <a href="?type=service" class="text-[10px] uppercase tracking-[0.2em] {% if request.GET.type == 'service' %}text-market-accent border-b-2 border-market-text h-full flex items-center mb-[-2px]{% else %}text-market-muted hover:text-market-text{% endif %} transition-all">
+            Services
+        </a>
+        <a href="?type=account" class="text-[10px] uppercase tracking-[0.2em] {% if request.GET.type == 'account' %}text-market-accent border-b-2 border-market-text h-full flex items-center mb-[-2px]{% else %}text-market-muted hover:text-market-text{% endif %} transition-all">
+            Credentials
+        </a>
+    </div>
+</div>
+
+<div class="flex flex-grow relative overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-transition sidebar-hidden lg:transform-none absolute lg:relative z-10 w-64 h-full border-r border-market-border bg-[#080808] flex flex-col shrink-0">
+        <nav class="flex-grow flex flex-col py-4 gap-1 overflow-y-auto">
+            <div class="px-5 py-2 mb-2">
+                <span class="text-[10px] uppercase tracking-widest text-market-muted font-medium">Categories</span>
+            </div>
+            <a href="#" class="w-full text-left px-5 py-2 text-[12px] text-market-accent border-l-2 border-market-text bg-market-surfaceHover transition-all flex justify-between items-center group">
+                <span>All Categories</span>
+                <span class="text-[10px] font-mono text-market-muted group-hover:text-market-text transition-colors">1.4k</span>
+            </a>
+            {% for category in categories %}
+            <div class="mt-4 px-5 py-2">
+                <span class="text-[10px] uppercase tracking-[0.15em] text-market-muted border-b border-market-border pb-1 block w-full">{{ category.name }}</span>
+            </div>
+            {% for child in category.children.all %}
+            <a href="#" class="w-full text-left px-5 py-2 text-[12px] text-market-muted hover:text-market-text hover:bg-market-surface transition-all flex justify-between items-center group">
+                <span>{{ child.name }}</span>
+                <span class="text-[10px] font-mono opacity-50 group-hover:opacity-100 transition-opacity">{{ child.products.count }}</span>
+            </a>
+            {% endfor %}
+            {% endfor %}
+        </nav>
+    </aside>
+
+    <!-- Product Grid -->
+    <main class="flex-grow overflow-y-auto bg-market-bg p-4 lg:p-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {% for p in products %}
+            <a href="{% url 'product_detail' p.id %}" class="group block bg-market-surface/30 border border-market-border hover:border-market-text transition-all duration-300">
+                <!-- Compact Image -->
+                <div class="aspect-[3/4] w-full bg-market-bg overflow-hidden relative">
+                    {% if p.image %}
+                    <img src="{{ p.image.url }}" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500">
+                    {% else %}
+                    <img src="{{ p.image_url|default:'https://placehold.co/400x500/0a0a0a/444444?font=inter&text=SHARP' }}" class="w-full h-full object-cover opacity-50 group-hover:opacity-90 transition-all">
+                    {% endif %}
+                    
+                    <!-- Price Overlay (Small) -->
+                    <div class="absolute bottom-2 right-2 bg-market-bg/90 border border-market-border px-2 py-0.5 text-[10px] font-mono text-market-accent backdrop-blur-sm">
+                        {{ p.price_xmr }} XMR
+                    </div>
+                </div>
+
+                <!-- Compact Details -->
+                <div class="p-3 space-y-2">
+                    <div class="flex justify-between items-start gap-2">
+                        <h3 class="text-[12px] text-market-text font-medium leading-tight truncate flex-grow">{{ p.name }}</h3>
+                    </div>
+                    
+                    <p class="text-[10px] text-market-muted line-clamp-2 leading-relaxed h-[30px]">
+                        {{ p.description }}
+                    </p>
+
+                    <div class="pt-2 border-t border-market-border/50 flex justify-between items-center">
+                        <span class="text-[9px] uppercase tracking-widest text-market-sys font-mono truncate max-w-[80px]">
+                            {{ p.vendor.display_name|default:p.vendor.username }}
+                        </span>
+                        
+                        <!-- Star Rating (Mini) -->
+                        <div class="flex gap-0.5 text-market-accent text-[8px]">
+                            {% if p.avg_rating %}
+                            <span class="text-market-text">{{ p.avg_rating|stringformat:".1f" }}</span> ★
+                            {% else %}
+                            <span class="text-market-muted">New</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full py-20 text-center flex flex-col items-center justify-center border border-dashed border-market-border">
+                <span class="text-[24px] mb-4 text-market-muted opacity-20">∅</span>
+                <p class="text-market-muted uppercase tracking-[0.2em] text-[11px]">No Listings Found In This Sector</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-hidden');
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 1024) {
+            sidebar.classList.remove('sidebar-hidden');
+        } else {
+            if (!sidebar.classList.contains('sidebar-hidden')) {
+               sidebar.classList.add('sidebar-hidden');
+            }
+        }
+    });
+</script>
+{% endblock %}

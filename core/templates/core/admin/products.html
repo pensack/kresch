@@ -1,0 +1,42 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">Asset Catalog</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="flex flex-col h-full">
+    <div class="p-6 shrink-0 border-b border-market-border bg-market-surface flex justify-between items-center">
+        <h2 class="text-[11px] uppercase tracking-widest text-market-muted">Platform Inventory</h2>
+    </div>
+    
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[900px]">
+            <thead>
+                <tr>
+                    <th class="pl-8">ID</th>
+                    <th>Asset Name</th>
+                    <th>Vendor</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th class="text-right pr-8">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for p in products %}
+                <tr class="hover:bg-market-surface/40 transition-colors border-b border-market-border/30">
+                    <td class="pl-8 font-mono text-market-muted">#{{ p.id }}</td>
+                    <td class="font-medium">{{ p.name }}</td>
+                    <td class="text-market-sys">{{ p.vendor.username }}</td>
+                    <td class="uppercase tracking-widest text-[9px]">{{ p.product_type }}</td>
+                    <td class="font-mono text-market-accent">{{ p.price_xmr }} XMR</td>
+                    <td class="text-right pr-8">
+                        <a href="{% url 'admin_product_manage' p.id %}" class="bg-market-text text-market-bg px-3 py-1 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Manage</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

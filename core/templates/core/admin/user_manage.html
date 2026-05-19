@@ -1,0 +1,133 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<a href="{% url 'admin_users' %}" class="text-[10px] uppercase tracking-[0.2em] text-market-muted hover:text-market-text">Users</a>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">{{ target_user.username }}</span>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-accent">Manage</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="p-8 max-w-6xl mx-auto space-y-8">
+    <!-- User Profile HUD -->
+    <div class="bg-market-surface border border-market-border p-8 flex flex-col md:flex-row justify-between items-start gap-8">
+        <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-market-bg border border-market-border flex items-center justify-center">
+                    <span class="text-2xl font-mono text-market-muted">{{ target_user.username|slice:":1" }}</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-medium text-market-text">{{ target_user.display_name|default:target_user.username }}</h2>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-market-muted">UID: {{ target_user.username }}</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex flex-col">
+                    <span class="text-[9px] uppercase tracking-widest text-market-muted">Security Level</span>
+                    <span class="text-[12px] text-market-accent font-medium">{{ target_user.get_role_display }}</span>
+                </div>
+                <div class="flex flex-col border-l border-market-border pl-4">
+                    <span class="text-[9px] uppercase tracking-widest text-market-muted">Status</span>
+                    <span class="text-[12px] text-market-success font-medium">Verified Active</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-64 space-y-4">
+            <label class="text-[10px] text-market-muted uppercase tracking-widest block">Reassign Authority</label>
+            <select onchange="updateRole('{{ target_user.id }}', this.value)" class="w-full bg-black/60 border border-market-border p-3 text-[11px] uppercase tracking-widest text-market-text outline-none focus:border-market-accent transition-all">
+                {% for role_code, role_name in role_choices %}
+                <option value="{{ role_code }}" {% if target_user.role == role_code %}selected{% endif %}>{{ role_name }}</option>
+                {% endfor %}
+            </select>
+            <button class="w-full border border-market-error/50 text-market-error py-3 text-[10px] uppercase tracking-widest hover:bg-market-error/10 transition-all">Freeze Credentials</button>
+        </div>
+    </div>
+
+    <!-- Nested Tabs Navigation -->
+    <div class="flex border-b border-market-border gap-8 h-10 px-2">
+        <button onclick="switchNestedTab('orders')" id="n-tab-btn-orders" class="n-tab-btn h-full text-[10px] uppercase tracking-widest text-market-accent border-b-2 border-market-text mb-[-1px]">Activity History</button>
+        <button onclick="switchNestedTab('security')" id="n-tab-btn-security" class="n-tab-btn h-full text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text">Security Key (PGP)</button>
+        <button onclick="switchNestedTab('settings')" id="n-tab-btn-settings" class="n-tab-btn h-full text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text">Access Settings</button>
+    </div>
+
+    <!-- Nested Tab Content -->
+    <div id="n-tab-orders" class="n-tab-content active">
+        <div class="bg-market-surface border border-market-border overflow-hidden">
+            <table class="market-table">
+                <thead>
+                    <tr>
+                        <th class="pl-6">OrderID</th>
+                        <th>Product</th>
+                        <th>Involvement</th>
+                        <th>Total</th>
+                        <th class="text-right pr-6">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-[11px] text-market-text">
+                    {% for o in orders %}
+                    <tr class="hover:bg-market-bg/50 border-b border-market-border/30">
+                        <td class="pl-6 font-mono text-market-muted">#{{ o.id }}</td>
+                        <td class="font-medium">{{ o.product.name }}</td>
+                        <td class="uppercase tracking-widest text-[9px]">
+                            {% if o.buyer == target_user %}Purchaser{% else %}Vendor{% endif %}
+                        </td>
+                        <td class="font-mono text-market-accent">{{ o.amount_due_xmr }} XMR</td>
+                        <td class="text-right pr-6"><span class="status-badge bg-black/40">{{ o.status }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-12 text-center text-market-muted uppercase tracking-widest">No transaction history detected</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="n-tab-security" class="n-tab-content hidden">
+        <div class="bg-market-surface border border-market-border p-8 space-y-4">
+            <h4 class="text-[10px] uppercase tracking-widest text-market-muted">Public Key Fingerprint</h4>
+            <div class="bg-black/60 p-6 font-mono text-[11px] text-market-sys break-all border border-market-border">
+                {{ target_user.pgp_public_key|default:"NO KEY REGISTERED" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchNestedTab(tabName) {
+        document.querySelectorAll('.n-tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.n-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.n-tab-btn').forEach(el => {
+            el.classList.remove('text-market-accent', 'border-b-2', 'border-market-text');
+            el.classList.add('text-market-muted');
+        });
+
+        document.getElementById('n-tab-' + tabName).classList.remove('hidden');
+        document.getElementById('n-tab-' + tabName).classList.add('active');
+        document.getElementById('n-tab-btn-' + tabName).classList.add('text-market-accent', 'border-b-2', 'border-market-text');
+        document.getElementById('n-tab-btn-' + tabName).classList.remove('text-market-muted');
+    }
+
+    function updateRole(userId, newRole) {
+        const formData = new FormData();
+        formData.append('role', newRole);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch(`/sysadmin/role/${userId}/`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Master Override Required');
+            }
+        });
+    }
+</script>
+{% endblock %}

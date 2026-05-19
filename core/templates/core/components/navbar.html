@@ -1,0 +1,41 @@
+<!-- Global Marketplace Navbar -->
+<header class="flex justify-between items-center border-b border-market-border bg-market-surface shrink-0 z-50">
+    <div class="flex items-center">
+        <!-- Brand -->
+        <div class="font-medium text-base tracking-[0.2em] text-market-accent px-6 py-4 border-r border-market-border">
+            <a href="{% url 'landing' %}">SHARP</a>
+        </div>
+
+        <!-- Custom Navigation Pill -->
+        <div class="hidden md:flex ml-8 border border-market-border bg-market-bg overflow-hidden">
+            <a href="{% url 'landing' %}" class="px-6 py-2 text-[10px] uppercase tracking-widest text-market-text hover:bg-market-surfaceHover border-r border-market-border transition-colors">Home</a>
+            <a href="{% url 'index' %}" class="px-6 py-2 text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text hover:bg-market-surfaceHover border-r border-market-border transition-colors">Browse</a>
+            <a href="{% url 'seller_dashboard' %}" class="px-6 py-2 text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text hover:bg-market-surfaceHover border-r border-market-border transition-colors">Sellers</a>
+            <a href="{% url 'buyer_dashboard' %}" class="px-6 py-2 text-[10px] uppercase tracking-widest text-market-muted hover:text-market-text hover:bg-market-surfaceHover transition-colors">Buyers</a>
+        </div>
+    </div>
+
+    <!-- User & Meta -->
+    <div class="flex items-center h-full">
+        <div class="hidden lg:flex items-center px-6 gap-6 text-[10px] font-mono text-market-muted border-r border-market-border h-full py-4">
+            <span>XMR: $142.55</span>
+            <span class="flex items-center gap-1.5"><span class="w-1 h-1 bg-market-success rounded-full"></span> Tor: On</span>
+        </div>
+        
+        <div class="flex h-full">
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="px-6 py-4 text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text hover:bg-market-surfaceHover transition-colors border-l border-market-border">
+                Logout
+            </a>
+            <div class="px-6 py-4 bg-market-surfaceHover flex flex-col items-end justify-center border-l border-market-border">
+                <span class="text-market-accent font-medium text-[12px] leading-none mb-1">{{ user.username }}</span>
+                <span class="text-[9px] text-market-muted uppercase tracking-wider leading-none">0.145 XMR</span>
+            </div>
+            {% else %}
+            <a href="{% url 'login' %}" class="px-6 py-4 text-[11px] uppercase tracking-widest text-market-muted hover:text-market-text hover:bg-market-surfaceHover transition-colors border-l border-market-border">
+                Login
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</header>

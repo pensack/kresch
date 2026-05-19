@@ -1,0 +1,90 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}Vendor Operations{% endblock %}
+{% block role_label %}OPERATIONS{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-input {
+    width: 100%;
+    background: #050505;
+    border: 1px solid #222;
+    color: #ececec;
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.form-input:focus {
+    border-color: #555;
+}
+.form-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7a7a7a;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block top_ticker %}
+<div class="hidden md:flex items-center px-6 gap-6 text-[10px] font-mono uppercase tracking-wider text-market-muted flex-grow">
+    <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+        <span>Network: Stable</span>
+    </div>
+    <div class="border-l border-market-border pl-6">
+        Active Orders: <span class="text-market-text">14</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="flex-grow flex flex-col py-4 gap-1 overflow-y-auto">
+    <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-accent border-l-2 border-market-text bg-market-surfaceHover transition-all flex justify-between items-center group">
+        Overview
+    </button>
+    <button onclick="switchTab('listings')" id="tab-btn-listings" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted hover:text-market-text border-l-2 border-transparent hover:bg-market-surface transition-all flex justify-between items-center group">
+        My Listings
+        <span class="border border-market-border text-market-text px-1.5 py-0.5 text-[9px] font-mono leading-none group-hover:border-market-text transition-colors">{{ my_products.count }}</span>
+    </button>
+    <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted hover:text-market-text border-l-2 border-transparent hover:bg-market-surface transition-all flex justify-between items-center group">
+        Orders
+    </button>
+    <div class="mt-auto pt-4 border-t border-market-border">
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted hover:text-market-text border-l-2 border-transparent hover:bg-market-surface transition-all flex items-center gap-3">
+            <svg class="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            Settings
+        </button>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+    {% if not request.user.xmr_multisig_pubkey %}
+    <div class="px-8 pt-8">
+        <div class="bg-market-error/10 border border-market-error/30 p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-market-error/20 flex items-center justify-center rounded-full">
+                    <svg class="w-5 h-5 text-market-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-[11px] text-market-error uppercase tracking-widest font-bold">Terminal Warning: Multisig Link Offline</h3>
+                    <p class="text-[10px] text-market-muted uppercase tracking-wider">You cannot receive payments until you provide your Monero Public Spend Key in Settings.</p>
+                </div>
+            </div>
+            <button onclick="switchTab('settings')" class="bg-market-error text-white px-4 py-1.5 text-[9px] uppercase tracking-widest font-bold hover:bg-white hover:text-market-error transition-all">Go to Settings</button>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% include 'core/seller_tabs/overview.html' %}
+    {% include 'core/seller_tabs/listings.html' %}
+    {% include 'core/seller_tabs/orders.html' %}
+    {% include 'core/seller_tabs/settings.html' %}
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

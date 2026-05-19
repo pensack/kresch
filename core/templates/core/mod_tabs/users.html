@@ -1,0 +1,115 @@
+<!-- TAB: USERS -->
+<div id="tab-users" class="tab-content flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Registered Identities</span>
+        <div class="flex gap-2">
+            <input type="text" placeholder="Search UID or Handle..." class="bg-market-bg border border-market-border px-3 py-1 text-[11px] outline-none focus:border-market-sys transition-colors">
+        </div>
+    </div>
+
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[1000px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">UID</th>
+                    <th>Public Handle</th>
+                    <th>Designation</th>
+                    <th>Joined At</th>
+                    <th>Status</th>
+                    <th class="text-right pr-6">Directives</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for u in users %}
+                <tr class="hover:bg-market-surface/50 transition-colors cursor-pointer group" onclick="openUserDossier('{{ u.username }}', '{{ u.display_name }}', '{{ u.role }}', '{{ u.date_joined|date:'F d, Y' }}', '{{ u.given_feedback.count }}')">
+                    <td class="pl-6 font-mono text-market-sys">{{ u.username }}</td>
+                    <td class="group-hover:text-white transition-colors">{{ u.display_name }}</td>
+                    <td>
+                        <span class="status-badge {% if u.role == 'VENDOR' %}bg-market-sysBg text-market-sys border border-market-sys/30{% else %}bg-market-surface text-market-muted border border-market-border{% endif %}">
+                            {{ u.role }}
+                        </span>
+                    </td>
+                    <td class="text-market-muted">{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+                    <td><span class="text-market-success uppercase text-[9px] tracking-widest">Active</span></td>
+                    <td class="text-right pr-6 space-x-4">
+                        <button class="text-market-muted hover:text-market-warning underline uppercase tracking-widest text-[9px] stop-propagation">Freeze</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: User Dossier -->
+<div id="user-dossier-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-lg flex flex-col shadow-[0_0_100px_rgba(77,154,255,0.1)]">
+        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
+            <span class="text-[11px] uppercase tracking-widest text-market-sys font-medium">Identity Dossier</span>
+            <button onclick="closeModal('user-dossier-modal')" class="text-market-muted hover:text-market-text">✕</button>
+        </div>
+        
+        <div class="p-8 space-y-8">
+            <div class="flex items-center gap-6">
+                <div class="w-16 h-16 bg-market-surface border border-market-border flex items-center justify-center text-market-sys text-2xl font-bold uppercase" id="dossier-initial">U</div>
+                <div>
+                    <h2 class="text-xl font-medium text-white mb-1" id="dossier-name">User Name</h2>
+                    <div class="font-mono text-market-sys text-[12px]" id="dossier-uid">UID: ########</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-px bg-market-border border border-market-border">
+                <div class="bg-market-surface p-4">
+                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Designation</div>
+                    <div class="text-market-text" id="dossier-role">BUYER</div>
+                </div>
+                <div class="bg-market-surface p-4">
+                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Enlisted Since</div>
+                    <div class="text-market-text" id="dossier-joined">Jan 01, 2026</div>
+                </div>
+                <div class="bg-market-surface p-4">
+                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Feedback Emitted</div>
+                    <div class="text-market-text" id="dossier-feedback">0 Ratings</div>
+                </div>
+                <div class="bg-market-surface p-4">
+                    <div class="text-[9px] text-market-muted uppercase tracking-widest mb-1">Total Spent</div>
+                    <div class="text-market-muted italic">Access Restricted</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-[10px] text-market-muted uppercase tracking-widest mb-4">Transaction History</h3>
+                <div class="border border-market-border bg-market-bg p-10 text-center text-market-muted text-[11px] uppercase tracking-widest italic opacity-40">
+                    Encrypted Ledger Offline
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button class="flex-grow border border-market-warning text-market-warning py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-warning/10 transition-all">
+                    Freeze Account
+                </button>
+                <button class="flex-grow border border-market-danger text-market-danger py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-danger/10 transition-all">
+                    Flag for Expungement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openUserDossier(uid, name, role, joined, feedback) {
+        document.getElementById('dossier-uid').innerText = 'UID: ' + uid;
+        document.getElementById('dossier-name').innerText = name;
+        document.getElementById('dossier-role').innerText = role;
+        document.getElementById('dossier-joined').innerText = joined;
+        document.getElementById('dossier-feedback').innerText = feedback + ' Ratings';
+        document.getElementById('dossier-initial').innerText = name.charAt(0);
+        
+        document.getElementById('user-dossier-modal').classList.remove('hidden');
+    }
+
+    // Stop propagation for action buttons so they don't trigger the modal
+    document.querySelectorAll('.stop-propagation').forEach(btn => {
+        btn.addEventListener('click', (e) => e.stopPropagation());
+    });
+</script>

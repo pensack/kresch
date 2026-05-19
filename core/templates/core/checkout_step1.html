@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Checkout - Step 1: Verification{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center py-10 px-4 bg-grid">
+    <div class="w-full max-w-4xl">
+        
+        <!-- Progress Bar -->
+        <div class="flex items-center mb-12 px-10">
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-text bg-market-text text-market-bg flex items-center justify-center font-bold text-xs">1</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-text whitespace-nowrap">Verification</span>
+            </div>
+            <div class="flex-grow h-px bg-market-border mx-4"></div>
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-border bg-market-bg text-market-muted flex items-center justify-center font-bold text-xs">2</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-muted whitespace-nowrap">Payment</span>
+            </div>
+            <div class="flex-grow h-px bg-market-border mx-4"></div>
+            <div class="flex flex-col items-center relative">
+                <div class="w-8 h-8 rounded-full border-2 border-market-border bg-market-bg text-market-muted flex items-center justify-center font-bold text-xs">3</div>
+                <span class="absolute top-10 text-[9px] uppercase tracking-widest text-market-muted whitespace-nowrap">Detection</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left: Form -->
+            <div class="lg:w-2/3 space-y-6">
+                <div class="bg-market-surface border border-market-border p-8">
+                    <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-8 font-medium border-b border-market-border pb-4">Order Configuration</h2>
+                    
+                    <form method="POST" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Quantity</label>
+                                <input type="number" name="quantity" value="1" min="1" class="w-full bg-market-bg border border-market-border p-3 text-market-text outline-none focus:border-market-text transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Shipping Priority</label>
+                                <select class="w-full bg-market-bg border border-market-border p-3 text-market-text outline-none cursor-pointer">
+                                    <option>Standard Dispatch</option>
+                                    <option>Priority Encrypted</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {% if product.product_type == 'PHYSICAL' %}
+                        <div class="space-y-4">
+                            <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Encrypted Shipping Address</label>
+                            <textarea name="delivery_data" required rows="4" class="w-full bg-market-bg border border-market-border p-4 text-[13px] font-mono text-market-text outline-none focus:border-market-accent transition-all" placeholder="-----BEGIN PGP MESSAGE-----&#10;... Paste your encrypted address here ..."></textarea>
+                            <p class="text-[10px] text-market-warning uppercase tracking-widest leading-relaxed">Required for Physical Goods. Ensure you use the Vendor's PGP key to encrypt your address before pasting.</p>
+                        </div>
+                        {% else %}
+                        <div class="space-y-4 bg-market-surface/30 border border-market-border p-6">
+                            <h3 class="text-[11px] text-market-text uppercase tracking-widest mb-2">Digital Fulfillment Protocol</h3>
+                            <p class="text-[11px] text-market-muted leading-relaxed uppercase tracking-wider">This is a {{ product.get_product_type_display }}. No physical shipping address is required. Your payload will be delivered directly to your Terminal upon blockchain confirmation.</p>
+                            <input type="hidden" name="delivery_data" value="DIGITAL_ASSET_PROTOCOL">
+                        </div>
+                        {% endif %}
+
+                        <div class="pt-6">
+                            <button type="submit" class="w-full bg-market-text text-market-bg hover:bg-white py-4 text-[12px] uppercase tracking-[0.2em] font-medium transition-all">
+                                Generate Escrow Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Summary -->
+            <div class="lg:w-1/3">
+                <div class="bg-market-surface border border-market-border p-6 sticky top-6">
+                    <h2 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">Order Summary</h2>
+                    
+                    <div class="flex gap-4 mb-6 pb-6 border-b border-market-border">
+                        <div class="w-16 h-20 bg-market-bg border border-market-border flex-shrink-0">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="w-full h-full object-cover grayscale">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="text-[13px] text-market-text font-medium mb-1">{{ product.name }}</div>
+                            <div class="text-[11px] text-market-muted">Vendor: {{ product.vendor.username }}</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-8">
+                        <div class="flex justify-between text-[12px]">
+                            <span class="text-market-muted">Price</span>
+                            <span class="text-market-text font-mono">{{ product.price_xmr }} XMR</span>
+                        </div>
+                        <div class="flex justify-between text-[12px]">
+                            <span class="text-market-muted">Fee (0.5%)</span>
+                            <span class="text-market-text font-mono">0.000000 XMR</span>
+                        </div>
+                        <div class="border-t border-market-border pt-3 mt-3 flex justify-between">
+                            <span class="text-[11px] uppercase tracking-widest text-market-text">Total</span>
+                            <span class="text-[16px] font-medium text-market-accent font-mono">{{ product.price_xmr }} XMR</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-market-bg p-4 border border-market-border text-[10px] text-market-muted leading-relaxed uppercase tracking-wider">
+                        Secure 2-of-3 multisig escrow supported for this transaction.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

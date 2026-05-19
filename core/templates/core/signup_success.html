@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Identity Forged{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-grid {
+    background-image: linear-gradient(to right, #111 1px, transparent 1px), linear-gradient(to bottom, #111 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+.mono-block { font-family: monospace; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 relative z-10 bg-grid min-h-[600px]">
+    
+    <div class="mb-8 text-center animate-[fadeIn_1s_ease-out]">
+        <div class="text-[18px] font-medium tracking-[0.2em] text-market-accent mb-2">THE MARKET</div>
+        <div class="text-[10px] uppercase tracking-widest text-market-muted">Decentralized Autonomous Commerce</div>
+    </div>
+
+    <div class="w-full max-w-2xl bg-[#030303] border border-market-border shadow-[0_0_80px_rgba(255,255,255,0.03)] relative overflow-hidden animate-[fadeIn_0.5s_ease-out]">
+        
+        <!-- Subtle top glow -->
+        <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-market-text/20 to-transparent"></div>
+
+        <div class="p-8 md:p-10">
+            <div class="flex items-center justify-between border-b border-market-border pb-6 mb-8">
+                <div>
+                    <h1 class="text-[18px] font-medium text-market-accent tracking-wide">Identity Forged</h1>
+                    <p class="text-[11px] text-market-muted uppercase tracking-widest mt-1">Status: Operational</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-market-surface flex items-center justify-center border border-market-border shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                    <svg class="w-5 h-5 text-market-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Key Vault -->
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <svg class="w-4 h-4 text-market-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                        </svg>
+                        <h3 class="text-[12px] font-medium uppercase tracking-widest text-market-accent">Master Key Verification</h3>
+                    </div>
+                    <p class="text-[12px] text-market-muted leading-relaxed mb-5">This 256-bit key is your solitary access credential. The system retains only a cryptographic hash. Loss of this key results in permanent, irreversible loss of access and funds.</p>
+                    
+                    <div class="bg-[#080808] border border-[#1a1a1a] rounded-sm relative group transition-colors hover:border-[#333333]">
+                        <div class="p-5">
+                            <textarea id="generated-key" readonly class="mono-block w-full bg-transparent text-market-accent border-none outline-none resize-none text-[13px] md:text-[14px] tracking-[0.15em] leading-relaxed" rows="3">{{ private_key }}</textarea>
+                        </div>
+                        
+                        <div class="border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                            <button onclick="copyKey()" id="copy-btn" class="w-full flex items-center justify-center gap-2 py-3.5 text-[11px] uppercase tracking-widest font-medium text-market-muted hover:text-market-accent hover:bg-[#111111] transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Copy to Clipboard</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Acknowledgment -->
+                <div class="bg-[#1a0f0f] border border-[#331a1a] p-5 rounded-sm">
+                    <label class="flex items-start gap-4 cursor-pointer group">
+                        <div class="relative flex items-center justify-center mt-0.5">
+                            <input type="checkbox" id="saved-confirm-checkbox" class="peer sr-only" onchange="toggleProceed()">
+                            <div class="w-4 h-4 border border-[#4a2a2a] bg-[#0a0505] rounded-sm peer-checked:bg-[#ff4d4d] peer-checked:border-[#ff4d4d] transition-colors flex items-center justify-center">
+                                <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <span class="text-[11px] text-[#ff6b6b] leading-relaxed uppercase tracking-wider font-medium block mb-1">Critical Acknowledgment</span>
+                            <span class="text-[11px] text-[#cc5555] leading-relaxed">I verify that this key is stored securely offline. I accept that terminal recovery is cryptographically impossible.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Action -->
+                <a href="{{ redirect_url }}" id="proceed-btn" class="block text-center w-full border border-[#222] bg-[#0a0a0a] text-[#555] px-4 py-4 text-[12px] uppercase tracking-widest font-medium transition-all duration-300 pointer-events-none opacity-50">
+                    Proceed to Terminal
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyKey() {
+        const keyDisplay = document.getElementById('generated-key');
+        keyDisplay.select();
+        document.execCommand('copy');
+        
+        const btn = document.getElementById('copy-btn');
+        btn.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-market-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-market-success">Securely Copied</span>
+        `;
+        setTimeout(() => {
+            btn.innerHTML = `
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span>Copy to Clipboard</span>
+            `;
+        }, 3000);
+    }
+
+    function toggleProceed() {
+        const checkbox = document.getElementById('saved-confirm-checkbox');
+        const btn = document.getElementById('proceed-btn');
+        if (checkbox.checked) {
+            btn.classList.remove('border-[#222]', 'bg-[#0a0a0a]', 'text-[#555]', 'pointer-events-none', 'opacity-50');
+            btn.classList.add('border-market-text', 'bg-market-text', 'text-market-bg', 'hover:bg-white', 'hover:scale-[1.01]');
+        } else {
+            btn.classList.add('border-[#222]', 'bg-[#0a0a0a]', 'text-[#555]', 'pointer-events-none', 'opacity-50');
+            btn.classList.remove('border-market-text', 'bg-market-text', 'text-market-bg', 'hover:bg-white', 'hover:scale-[1.01]');
+        }
+    }
+</script>
+{% endblock %}

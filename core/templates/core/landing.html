@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Welcome to the Terminal{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-gradient {
+    background: radial-gradient(circle at 50% 50%, #0d0d0d 0%, #030303 100%);
+}
+.scanline {
+    width: 100%;
+    height: 100px;
+    z-index: 10;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0.1;
+    position: absolute;
+    bottom: 100%;
+    animation: scanline 10s linear infinite;
+}
+@keyframes scanline {
+    0% { bottom: 100%; }
+    100% { bottom: -100px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col hero-gradient relative overflow-hidden">
+    <div class="scanline"></div>
+    
+    <div class="max-w-4xl mx-auto w-full px-6 py-24 lg:py-32 flex flex-col items-center text-center relative z-20">
+        <div class="mb-6 border border-market-border px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-market-muted">
+            Protocol v4.2.0 Status: Operational
+        </div>
+        
+        <h1 class="text-4xl lg:text-6xl font-medium tracking-tight text-market-accent mb-8 leading-tight">
+            The Industrial Standard for <br/>
+            <span class="text-market-text">Anonymous Commerce</span>
+        </h1>
+        
+        <p class="text-market-muted text-lg lg:text-xl max-w-2xl mb-12 leading-relaxed">
+            A high-utility, zero-trust marketplace designed for maximum security and minimal footprint. Encrypted by default. Decentralized by choice.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <a href="{% url 'index' %}" class="bg-market-text text-market-bg hover:bg-white px-10 py-4 text-[13px] uppercase tracking-widest font-medium transition-all">
+                Enter Market Index
+            </a>
+            <a href="{% url 'login' %}" class="border border-market-border hover:border-market-text text-market-text px-10 py-4 text-[13px] uppercase tracking-widest font-medium transition-all">
+                Access Terminal
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="max-w-6xl mx-auto w-full px-6 pb-24 grid grid-cols-1 md:grid-cols-3 gap-1 border-t border-market-border bg-market-border">
+        <div class="bg-market-bg p-8">
+            <div class="text-market-accent text-xl mb-4">01. Cryptographic Auth</div>
+            <p class="text-market-muted text-sm leading-relaxed">No emails. No passwords. Identities are governed strictly by local 256-bit master keys. You own your access.</p>
+        </div>
+        <div class="bg-market-bg p-8">
+            <div class="text-market-accent text-xl mb-4">02. XMR Native</div>
+            <p class="text-market-muted text-sm leading-relaxed">Optimized for Monero. Private transactions with automated subaddress generation and multi-sig escrow support.</p>
+        </div>
+        <div class="bg-market-bg p-8">
+            <div class="text-market-accent text-xl mb-4">03. Zero-Trust Ops</div>
+            <p class="text-market-muted text-sm leading-relaxed">Hardened for Tor. Minimal JavaScript footprint and strict server-side rendering for maximum anonymity.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<a href="{% url 'admin_orders' %}" class="text-[10px] uppercase tracking-[0.2em] text-market-muted hover:text-market-text">Orders</a>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">#{{ order.id }}</span>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-accent">Intervention</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="p-8 max-w-5xl mx-auto space-y-8">
+    <div class="bg-market-surface border border-market-border p-8 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <span class="text-2xl font-mono text-market-accent">Order #{{ order.id }}</span>
+                <span class="status-badge bg-market-bg border border-market-border">{{ order.status }}</span>
+            </div>
+            <p class="text-[14px] text-market-text">{{ order.product.name }}</p>
+            <div class="flex gap-6 text-[11px] uppercase tracking-widest text-market-muted">
+                <span>Buyer: {{ order.buyer.username }}</span>
+                <span>Vendor: {{ order.product.vendor.username }}</span>
+            </div>
+        </div>
+        <div class="text-right">
+            <span class="text-[9px] uppercase tracking-widest text-market-muted block mb-1">Total Escrow</span>
+            <span class="text-2xl font-mono text-market-success">{{ order.amount_due_xmr }} XMR</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Intervention Logic -->
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted">Admin Intervention Terminal</h3>
+            <div class="space-y-4">
+                <form action="{% url 'resolve_dispute' order.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="RELEASE">
+                    <button type="submit" class="w-full bg-market-success text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Force Escrow Release (Vendor Payout)</button>
+                </form>
+                <form action="{% url 'resolve_dispute' order.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="REFUND">
+                    <button type="submit" class="w-full border border-market-error text-market-error py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-error hover:text-white transition-all">Force Escrow Refund (Buyer Credit)</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Metadata -->
+        <div class="bg-market-surface border border-market-border p-8 space-y-6 font-mono text-[11px]">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted font-sans">Technical Metadata</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between border-b border-market-border/30 pb-2">
+                    <span class="text-market-muted">Payment Type:</span>
+                    <span class="text-market-text">Monero (XMR)</span>
+                </div>
+                <div class="flex justify-between border-b border-market-border/30 pb-2">
+                    <span class="text-market-muted">Asset Type:</span>
+                    <span class="text-market-text">{{ order.product.get_product_type_display }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-market-muted">Created:</span>
+                    <span class="text-market-text">{{ order.created_at|date:"Y-m-d H:i:s" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

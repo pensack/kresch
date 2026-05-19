@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Terminal Access{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-grid {
+    background-image: linear-gradient(to right, #111 1px, transparent 1px), linear-gradient(to bottom, #111 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 relative z-10 bg-grid min-h-[600px]">
+    
+    <div class="mb-8 text-center">
+        <div class="text-[18px] font-medium tracking-[0.2em] text-market-accent mb-2">THE MARKET</div>
+        <div class="text-[10px] uppercase tracking-widest text-market-muted">Decentralized Autonomous Commerce</div>
+    </div>
+
+    <div class="w-full max-w-lg border border-market-border bg-[#050505] shadow-[0_0_50px_rgba(0,0,0,0.8)] p-8">
+        <h1 class="text-[16px] font-medium text-market-text mb-6 border-b border-market-border pb-4">Terminal Access</h1>
+
+        {% if error %}
+        <div class="bg-market-dangerBg border border-market-danger p-3 mb-6">
+            <p class="text-[11px] text-market-danger">{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-market-muted mb-2">Master Key</label>
+                <input type="password" name="private_key" required class="w-full bg-market-surface border border-market-border text-market-text px-4 py-4 outline-none focus:border-market-borderFocus transition-colors font-mono text-[14px]" placeholder="Enter your 256-bit key..." autocomplete="off">
+            </div>
+
+            <button type="submit" class="w-full border border-market-text bg-market-text text-market-bg hover:bg-market-surface hover:text-market-text px-4 py-4 text-[11px] uppercase tracking-widest font-medium transition-all mt-4">
+                Authenticate
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-market-border text-center">
+            <span class="text-[11px] text-market-muted">Require a new identity?</span>
+            <a href="{% url 'signup' %}" class="ml-2 text-[11px] uppercase tracking-widest text-market-text hover:underline focus:outline-none">Forge Identity</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

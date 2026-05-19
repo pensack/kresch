@@ -1,0 +1,41 @@
+<div id="tab-settings" class="tab-content p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex justify-between items-center border-b border-market-border pb-6">
+        <h2 class="text-[18px] uppercase tracking-[0.2em] text-market-text font-medium">Neural Configuration</h2>
+        <span class="text-[10px] text-market-muted uppercase tracking-widest font-mono">Terminal ID: {{ user.id|stringformat:"04d" }}</span>
+    </div>
+
+    <form method="POST" action="{% url 'update_vendor_settings' %}" class="max-w-3xl space-y-8">
+        {% csrf_token %}
+        
+        <!-- Financial Sector -->
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-accent font-bold">Financial Protocol (Monero Multisig)</h3>
+            
+            <div class="space-y-4">
+                <label class="block text-[10px] uppercase tracking-widest text-market-muted">Public Spend Key (Key B)</label>
+                <div class="relative group">
+                    <input type="text" name="xmr_multisig_pubkey" value="{{ user.xmr_multisig_pubkey|default:'' }}" class="w-full bg-market-bg border border-market-border p-4 text-[13px] font-mono text-market-text outline-none focus:border-market-accent transition-all" placeholder="Paste your Monero Public Spend Key here...">
+                    <div class="mt-2 text-[9px] text-market-muted uppercase tracking-wider leading-relaxed opacity-60">
+                        This key is used as 'Key B' in the 2-of-3 multisig escrow. Your funds are unrecoverable without this link initialized.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Identity Sector -->
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-[0.2em] text-market-text font-bold">Identity Verification (PGP)</h3>
+            
+            <div class="space-y-4">
+                <label class="block text-[10px] uppercase tracking-widest text-market-muted">PGP Public Key</label>
+                <textarea name="pgp_public_key" rows="8" class="w-full bg-market-bg border border-market-border p-4 text-[11px] font-mono text-market-muted outline-none focus:border-market-text transition-all" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----">{{ user.pgp_public_key|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="bg-market-text text-market-bg px-10 py-3 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                Sync Terminal Settings
+            </button>
+        </div>
+    </form>
+</div>

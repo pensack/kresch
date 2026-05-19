@@ -1,0 +1,54 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">Overview</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="p-8 space-y-8">
+    <!-- Stat HUD -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Total Registry</span>
+            <span class="text-3xl font-mono text-market-text">{{ total_users }}</span>
+        </div>
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Active Sales</span>
+            <span class="text-3xl font-mono text-market-success">{{ total_sales }}</span>
+        </div>
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Asset Catalog</span>
+            <span class="text-3xl font-mono text-market-accent">{{ total_products }}</span>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-market-surface border border-market-border p-6">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">Recent New Comers</h3>
+            <div class="space-y-4">
+                {% for u in recent_users %}
+                <div class="flex justify-between items-center border-b border-market-border/50 pb-3">
+                    <div class="flex flex-col">
+                        <span class="text-[12px] text-market-text font-medium">{{ u.username }}</span>
+                        <span class="text-[9px] uppercase text-market-muted">{{ u.get_role_display }}</span>
+                    </div>
+                    <a href="{% url 'admin_user_manage' u.id %}" class="text-[10px] uppercase tracking-widest text-market-accent hover:underline">Manage</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted mb-4">Finance Protocol</h3>
+            <div class="bg-black/40 p-4 border border-market-border">
+                <span class="text-2xl font-mono text-market-success">2.0%</span>
+                <span class="text-[9px] uppercase block text-market-muted">Platform Tax</span>
+            </div>
+            <p class="text-[11px] text-market-muted leading-relaxed italic">
+                Revenue splits are enforced at the multisig layer. 98% is distributed to vendor payout addresses upon order finalization.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Critical Terminal Failure - 500{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center justify-center p-6 bg-grid relative overflow-hidden">
+    <!-- Animated glitch background effect -->
+    <div class="absolute inset-0 pointer-events-none opacity-5">
+        <div class="absolute inset-0 bg-repeat bg-[length:100px_100px] animate-pulse" style="background-image: radial-gradient(circle, #ff4444 1px, transparent 1px);"></div>
+    </div>
+
+    <div class="w-full max-w-2xl bg-market-bg border border-market-error/30 p-12 text-center relative z-10 shadow-[0_0_50px_rgba(255,68,68,0.1)]">
+        <div class="mb-8 inline-block">
+            <div class="w-20 h-20 rounded-full border-2 border-market-error flex items-center justify-center animate-pulse">
+                <svg class="w-10 h-10 text-market-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="text-[32px] font-medium text-market-error tracking-[0.2em] uppercase mb-4">Terminal Error</h1>
+        <div class="h-px w-20 bg-market-error/50 mx-auto mb-8"></div>
+
+        <div class="space-y-6 mb-10 text-left bg-black/40 border border-market-border p-6 font-mono">
+            <div class="flex gap-3">
+                <span class="text-market-error">[LOG]:</span>
+                <span class="text-market-muted">Exception detected in core processing unit.</span>
+            </div>
+            <div class="flex gap-3">
+                <span class="text-market-error">[STATUS]:</span>
+                <span class="text-market-muted">Safe-mode protocol initialized. Access restricted.</span>
+            </div>
+            <div class="flex gap-3">
+                <span class="text-market-error">[ACTION]:</span>
+                <span class="text-market-text uppercase tracking-widest text-[11px]">Contact system administrator or return to safe-sector.</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'index' %}" class="bg-market-text text-market-bg px-8 py-3 text-[11px] uppercase tracking-[0.2em] font-medium hover:bg-white transition-all">
+                Return to Browse
+            </a>
+            <button onclick="window.location.reload()" class="border border-market-border text-market-text px-8 py-3 text-[11px] uppercase tracking-[0.2em] font-medium hover:border-market-text transition-all">
+                Attempt Re-Sync
+            </button>
+        </div>
+        
+        <p class="mt-12 text-[9px] text-market-muted uppercase tracking-[0.3em] opacity-40">Error Code: 500 // Internal System Breach</p>
+    </div>
+
+    <!-- Decorative Corner Accents -->
+    <div class="absolute top-10 left-10 w-20 h-20 border-t-2 border-l-2 border-market-error/20"></div>
+    <div class="absolute bottom-10 right-10 w-20 h-20 border-b-2 border-r-2 border-market-error/20"></div>
+</div>
+{% endblock %}

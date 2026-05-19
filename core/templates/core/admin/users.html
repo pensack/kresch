@@ -1,0 +1,47 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">Users</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="flex flex-col h-full">
+    <div class="p-6 shrink-0 border-b border-market-border bg-market-surface flex justify-between items-center">
+        <h2 class="text-[11px] uppercase tracking-widest text-market-muted">Global User Registry</h2>
+        <div class="flex gap-4">
+            <input type="text" placeholder="Filter by UID or Handle..." class="bg-black/40 border border-market-border px-4 py-1.5 text-[11px] outline-none text-market-text focus:border-market-accent w-64">
+        </div>
+    </div>
+    
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[900px]">
+            <thead>
+                <tr>
+                    <th class="pl-8">UID</th>
+                    <th>Display Name</th>
+                    <th>Security Role</th>
+                    <th>Registration</th>
+                    <th class="text-right pr-8">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for u in users %}
+                <tr class="hover:bg-market-surface/40 transition-colors border-b border-market-border/30">
+                    <td class="pl-8 font-mono text-market-muted">{{ u.username }}</td>
+                    <td class="font-medium">{{ u.display_name|default:"---" }}</td>
+                    <td>
+                        <span class="px-2 py-0.5 border border-market-border bg-market-bg text-[9px] uppercase tracking-widest text-market-sys">
+                            {{ u.get_role_display }}
+                        </span>
+                    </td>
+                    <td class="text-market-muted font-mono">{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+                    <td class="text-right pr-8">
+                        <a href="{% url 'admin_user_manage' u.id %}" class="bg-market-text text-market-bg px-3 py-1 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Manage</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

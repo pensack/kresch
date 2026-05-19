@@ -1,0 +1,108 @@
+<!-- TAB: ORDERS -->
+<div id="tab-orders" class="tab-content flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Incoming Order Queue</span>
+    </div>
+
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[1000px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">Order ID</th>
+                    <th>Product Asset</th>
+                    <th>Buyer UID</th>
+                    <th>Payment Status</th>
+                    <th>Encryption</th>
+                    <th class="text-right pr-6">Directives</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for o in received_orders %}
+                <tr class="hover:bg-market-surface/50 transition-colors">
+                    <td class="pl-6 font-mono text-market-muted">#{{ o.id }}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 border border-market-border bg-market-bg flex-shrink-0">
+                                {% if o.product.image %}
+                                <img src="{{ o.product.image.url }}" class="w-full h-full object-cover">
+                                {% endif %}
+                            </div>
+                            <span class="font-medium">{{ o.product.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-market-sys font-mono">{{ o.buyer.username }}</td>
+                    <td>
+                        <span class="status-badge {% if o.status == 'PAID_IN_ESCROW' %}bg-market-successBg text-market-success border border-market-success/30{% else %}bg-market-surface text-market-muted border border-market-border{% endif %}">
+                            {{ o.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if o.delivery_data %}
+                        <span class="text-market-sys uppercase text-[9px] tracking-widest flex items-center gap-2">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Encrypted Data
+                        </span>
+                        {% else %}
+                        <span class="text-market-muted uppercase text-[9px] tracking-widest">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right pr-6 space-x-4">
+                        {% if o.delivery_data %}
+                        <button onclick="viewDeliveryData('{{ o.id }}', '{{ o.delivery_data|escapejs }}')" class="text-market-accent hover:underline uppercase tracking-widest text-[9px]">View Address</button>
+                        {% endif %}
+                        <button class="text-market-muted hover:text-market-text underline uppercase tracking-widest text-[9px]">Status</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-20 text-market-muted uppercase tracking-widest text-[11px]">Queue Empty</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Delivery Data -->
+<div id="delivery-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-lg flex flex-col shadow-[0_0_100px_rgba(77,154,255,0.05)]">
+        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
+            <span class="text-[11px] uppercase tracking-widest text-market-text font-medium">Encrypted Shipping Data</span>
+            <button onclick="closeModal('delivery-modal')" class="text-market-muted hover:text-market-text">✕</button>
+        </div>
+        
+        <div class="p-8 space-y-6">
+            <div class="space-y-2">
+                <div class="flex justify-between items-end">
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest">Data Stream (PGP)</label>
+                    <button onclick="copyToClipboard('delivery-payload')" class="text-[9px] text-market-sys hover:underline uppercase tracking-widest">Copy Payload</button>
+                </div>
+                <div id="delivery-payload" class="bg-black/60 border border-market-border p-5 text-[11px] text-market-text font-mono leading-relaxed break-all whitespace-pre-wrap max-h-60 overflow-y-auto">
+                    Ciphertext...
+                </div>
+            </div>
+            
+            <div class="bg-market-sysBg/20 border border-market-sys/30 p-4 text-[10px] text-market-sys leading-relaxed uppercase tracking-wider italic">
+                Recommendation: Decrypt this payload offline using your private key. Do not store plaintext on the terminal.
+            </div>
+
+            <button onclick="closeModal('delivery-modal')" class="w-full bg-market-surface border border-market-border text-market-text py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-market-surfaceHover transition-all">
+                Close Dispatch Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewDeliveryData(id, data) {
+        document.getElementById('delivery-payload').innerText = data;
+        openModal('delivery-modal');
+    }
+
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Payload copied to terminal clipboard.");
+        });
+    }
+</script>

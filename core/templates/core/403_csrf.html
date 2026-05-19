@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Session Desynchronized{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-grid {
+    background-image: linear-gradient(to right, #111 1px, transparent 1px), linear-gradient(to bottom, #111 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+.glitch-effect {
+    animation: glitch 1s linear infinite;
+}
+@keyframes glitch {
+    2%, 64% { transform: translate(2px,0) skew(0deg); }
+    4%, 60% { transform: translate(-2px,0) skew(0deg); }
+    62% { transform: translate(0,0) skew(5deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 relative z-10 bg-grid min-h-[600px]">
+    
+    <div class="w-full max-w-lg border border-market-danger bg-[#0a0505] shadow-[0_0_80px_rgba(255,77,77,0.1)] p-8 md:p-12 relative overflow-hidden text-center">
+        
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-market-danger"></div>
+        
+        <div class="mb-6 flex justify-center">
+            <div class="h-16 w-16 rounded-full border border-market-danger bg-market-dangerBg flex items-center justify-center">
+                <svg class="w-8 h-8 text-market-danger glitch-effect" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="text-[20px] font-medium text-market-danger tracking-wide mb-3 uppercase">Session Desynchronized</h1>
+        
+        <p class="text-[12px] text-market-muted leading-relaxed mb-8">
+            The cryptographic handshake (CSRF) for this request failed validation. This usually occurs when a terminal session is left open too long or cookies are misaligned.
+        </p>
+
+        <div class="bg-market-bg border border-market-border p-4 mb-8 text-left">
+            <span class="text-[10px] text-market-muted uppercase tracking-widest block mb-2">Technical Diagnostic</span>
+            <code class="text-[11px] text-market-text font-mono">{{ reason|default:"Security token mismatch." }}</code>
+        </div>
+
+        <a href="javascript:history.back()" class="inline-block border border-market-text bg-market-text text-market-bg hover:bg-white px-8 py-3.5 text-[11px] uppercase tracking-widest font-medium transition-all">
+            Re-Establish Connection
+        </a>
+        
+    </div>
+</div>
+{% endblock %}

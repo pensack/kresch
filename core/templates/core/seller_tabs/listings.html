@@ -1,0 +1,162 @@
+<!-- TAB: LISTINGS -->
+<div id="tab-listings" class="tab-content flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted">Active Inventory</span>
+        <button onclick="openModal('create-listing-modal')" class="bg-market-text text-market-bg hover:bg-white px-4 py-2 text-[10px] uppercase tracking-widest font-medium transition-all">
+            + New Listing
+        </button>
+    </div>
+
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[800px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">ID</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price (XMR)</th>
+                    <th>Status</th>
+                    <th class="text-right pr-6">Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for product in my_products %}
+                <tr class="hover:bg-market-surface/50 transition-colors">
+                    <td class="pl-6 font-mono text-market-muted">#{{ product.id }}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 border border-market-border bg-market-bg flex-shrink-0">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" class="w-full h-full object-cover grayscale">
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-[10px] text-market-muted">∅</div>
+                                {% endif %}
+                            </div>
+                            <span class="font-medium">{{ product.name }}</span>
+                        </div>
+                    </td>
+                    <td><span class="text-market-muted">{{ product.category.name }}</span> <span class="text-[10px] ml-1 opacity-50">{{ product.subcategory_name }}</span></td>
+                    <td class="font-mono">{{ product.price_xmr }}</td>
+                    <td><span class="text-[#00cc66] uppercase text-[10px] tracking-wider">{{ product.status_text }}</span></td>
+                    <td class="text-right pr-6">
+                        <button class="text-market-muted hover:text-market-text underline text-[11px] uppercase tracking-wider">Edit</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-20 text-market-muted uppercase tracking-widest text-[11px]">No Listings Active</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Create Listing -->
+<div id="create-listing-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-2xl flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
+            <span class="text-[11px] uppercase tracking-widest text-market-text font-medium">Create New Listing</span>
+            <button onclick="closeModal('create-listing-modal')" class="text-market-muted hover:text-market-text">✕</button>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Product Name</label>
+                        <input type="text" name="name" required class="form-input" placeholder="e.g. Encrypted Storage Drive">
+                    </div>
+                    <div>
+                        <label class="form-label">Asset Modality</label>
+                        <select name="product_type" id="product_type_select" required class="form-input cursor-pointer" onchange="toggleAssetFields()">
+                            <option value="PHYSICAL">Physical Good</option>
+                            <option value="DIGITAL">Digital Asset (File/Link)</option>
+                            <option value="ACCOUNT">Access Credentials</option>
+                            <option value="SERVICE">Professional Service</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Category</label>
+                        <select name="category" required class="form-input cursor-pointer">
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Primary Image</label>
+                        <input type="file" name="image" class="form-input text-market-muted text-[11px] file:bg-market-surface file:border-none file:text-market-text file:px-2 file:mr-4 file:cursor-pointer">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Price (USD)</label>
+                            <input type="number" step="0.01" name="price_usd" class="form-input" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="form-label">Price (XMR) *</label>
+                            <input type="number" step="0.000001" name="price_xmr" required class="form-input" placeholder="0.000000">
+                        </div>
+                    </div>
+                    <div id="contact_handle_field" class="hidden">
+                        <label class="form-label">Contact Protocol (Telegram/Signal)</label>
+                        <input type="text" name="contact_handle" class="form-input" placeholder="@handle or +123...">
+                    </div>
+                </div>
+            </div>
+
+            <div id="digital_asset_field" class="hidden space-y-4">
+                <div>
+                    <label class="form-label">Digital Asset / Credentials (Hidden until payment)</label>
+                    <textarea name="digital_content" rows="3" class="form-input font-mono text-[11px]" placeholder="Paste credentials, zip links, or hidden data here..."></textarea>
+                </div>
+                <div>
+                    <label class="form-label">Usage / Login Instructions (Revealed after payment)</label>
+                    <textarea name="usage_instructions" rows="2" class="form-input text-[11px]" placeholder="e.g. 1. Go to site.com 2. Login 3. Change password immediately..."></textarea>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="form-label">Public Description</label>
+                    <textarea name="description" rows="5" required class="form-input resize-none" placeholder="Provide general details..."></textarea>
+                </div>
+                <div>
+                    <label class="form-label">Technical Specifications (JSON format)</label>
+                    <textarea name="specifications" rows="5" class="form-input font-mono text-[11px]" placeholder='{ "Capacity": "1TB", "Speed": "500MB/s" }'></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-grow bg-market-text text-market-bg hover:bg-white py-3 text-[12px] uppercase tracking-[0.2em] font-medium transition-all">
+                    Finalize & List Item
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleAssetFields() {
+        const type = document.getElementById('product_type_select').value;
+        const digitalField = document.getElementById('digital_asset_field');
+        const contactField = document.getElementById('contact_handle_field');
+        
+        // Digital Goods and Accounts need the hidden content field
+        if (type === 'DIGITAL' || type === 'ACCOUNT') {
+            digitalField.classList.remove('hidden');
+        } else {
+            digitalField.classList.add('hidden');
+        }
+        
+        // Services need the contact handle
+        if (type === 'SERVICE') {
+            contactField.classList.remove('hidden');
+        } else {
+            contactField.classList.add('hidden');
+        }
+    }
+</script>

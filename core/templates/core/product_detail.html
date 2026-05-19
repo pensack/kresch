@@ -1,0 +1,289 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.pgp-block {
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.rating-star { cursor: pointer; transition: color 0.2s; }
+.rating-star:hover, .rating-star.active { color: #ffffff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Context -->
+<div class="flex border-b border-market-border bg-market-surface/50 px-5 py-2.5 text-[11px] text-market-muted uppercase tracking-wider shrink-0">
+    <a href="{% url 'index' %}" class="hover:text-market-text transition-colors">Browse</a>
+    <span class="mx-2 text-market-border">/</span>
+    {% if product.category.parent %}
+    <a href="#" class="hover:text-market-text transition-colors">{{ product.category.parent.name }}</a>
+    <span class="mx-2 text-market-border">/</span>
+    {% endif %}
+    <a href="#" class="hover:text-market-text transition-colors">{{ product.category.name }}</a>
+    <span class="mx-2 text-market-border">/</span>
+    <span class="text-market-text">Item #{{ product.id }}</span>
+</div>
+
+<!-- Main Content Area -->
+<main class="flex flex-col lg:flex-row flex-grow overflow-hidden">
+    
+    <!-- Left Column: Media & Description -->
+    <article class="lg:w-[65%] border-r border-market-border flex flex-col overflow-y-auto">
+        
+        <!-- Hero Image -->
+        <div class="aspect-[3/4] w-full max-w-[500px] mx-auto border-b border-market-border overflow-hidden bg-market-bg relative group shrink-0">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500">
+            {% else %}
+            <img src="{{ product.image_url|default:'https://placehold.co/600x800/0a0a0a/444444?font=inter&text=MARKET' }}" alt="{{ product.name }}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500">
+            {% endif %}
+            <div class="absolute bottom-4 left-4 bg-market-bg/90 border border-market-border px-3 py-1 text-[11px] uppercase tracking-widest text-market-muted backdrop-blur-sm">
+                Verified {{ product.get_product_type_display }}
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="flex flex-col flex-grow">
+            <!-- Tabs -->
+            <div class="flex border-b border-market-border text-[11px] uppercase tracking-wider bg-market-surface/30 sticky top-0 z-10">
+                <button onclick="switchProductTab('description')" id="tab-btn-description" class="product-tab-btn px-6 py-3 border-r border-market-border text-market-text border-b-2 border-b-market-text -mb-[1px] transition-all">Description</button>
+                <button onclick="switchProductTab('specs')" id="tab-btn-specs" class="product-tab-btn px-6 py-3 border-r border-market-border text-market-muted hover:text-market-text transition-all">Specifications</button>
+                <button onclick="switchProductTab('feedback')" id="tab-btn-feedback" class="product-tab-btn px-6 py-3 border-r border-market-border text-market-muted hover:text-market-text transition-all">Feedback ({{ feedbacks.count }})</button>
+            </div>
+
+            <!-- Tab Content: Description -->
+            <div id="tab-content-description" class="product-tab-content p-8 space-y-6 text-market-muted text-[14px] leading-relaxed">
+                <p class="text-market-text font-medium">
+                    {{ product.description|default:"N/A" }}
+                </p>
+                
+                <h3 class="text-market-text text-[11px] uppercase tracking-widest pt-4 border-t border-market-border mt-8">Technical Data</h3>
+                <div class="market-table-container mt-4 border border-market-border">
+                    <table class="market-table">
+                        <tbody class="text-[12px]">
+                            <tr>
+                                <td class="w-1/3 bg-market-surface/50 font-medium">Type</td>
+                                <td class="text-market-text">{{ product.get_product_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <td class="w-1/3 bg-market-surface/50 font-medium">Delivery</td>
+                                <td class="text-market-text">
+                                    {% if product.product_type == 'PHYSICAL' %}Manual Dispatch{% else %}Instant Access Protocol{% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-1/3 bg-market-surface/50 font-medium">Escrow Support</td>
+                                <td class="text-market-text">{% if product.is_escrow %}Yes, Multisig supported{% else %}No Escrow (Direct Pay){% endif %}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: Specs -->
+            <div id="tab-content-specs" class="product-tab-content hidden p-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-market-border border border-market-border">
+                    {% for key, value in product.specifications.items %}
+                    <div class="bg-market-bg p-4 flex justify-between items-center group hover:bg-market-surface transition-colors">
+                        <span class="text-[10px] uppercase tracking-widest text-market-muted">{{ key }}</span>
+                        <span class="text-[11px] text-market-text font-medium">{{ value }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="bg-market-bg p-10 text-center text-market-muted uppercase tracking-[0.2em] text-[11px] col-span-2">
+                        Technical Data: N/A
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Tab Content: Feedback -->
+            <div id="tab-content-feedback" class="product-tab-content hidden p-8 space-y-8">
+                {% if user.is_authenticated %}
+                <!-- Feedback Form -->
+                <div class="border border-market-border bg-market-surface/20 p-6">
+                    <h3 class="text-market-text text-[11px] uppercase tracking-widest mb-4">Post Feedback</h3>
+                    <form action="{% url 'add_feedback' product.id %}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="flex gap-4 items-center">
+                            <label class="text-[10px] text-market-muted uppercase tracking-widest">Rating:</label>
+                            <div class="flex gap-1 text-market-muted" id="rating-stars">
+                                <span class="rating-star text-lg" onclick="setRating(1)">★</span>
+                                <span class="rating-star text-lg" onclick="setRating(2)">★</span>
+                                <span class="rating-star text-lg" onclick="setRating(3)">★</span>
+                                <span class="rating-star text-lg" onclick="setRating(4)">★</span>
+                                <span class="rating-star text-lg" onclick="setRating(5)">★</span>
+                            </div>
+                            <input type="hidden" name="rating" id="rating-input" value="5">
+                        </div>
+                        <textarea name="comment" rows="3" required class="w-full bg-market-bg border border-market-border p-4 text-[13px] outline-none focus:border-market-text transition-colors" placeholder="Write your review..."></textarea>
+                        <div class="flex justify-between items-center">
+                            <input type="file" name="image" class="text-[10px] text-market-muted file:bg-market-surface file:border-none file:text-market-text file:px-3 file:py-1 file:mr-4">
+                            <button type="submit" class="bg-market-text text-market-bg px-6 py-2 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Feedback List -->
+                <div class="space-y-4">
+                    {% for fb in feedbacks %}
+                    <div class="border border-market-border p-5 bg-market-surface/10">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-market-surface border border-market-border flex items-center justify-center text-[11px] font-medium">{{ fb.buyer.display_name|first }}</div>
+                                <div>
+                                    <div class="text-[12px] text-market-text font-medium">{{ fb.buyer.display_name }}</div>
+                                    <div class="text-[10px] text-market-muted">{{ fb.created_at|date:"F d, Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="text-market-accent text-sm">
+                                {% for i in "12345"|make_list %}{% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}{% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-[13px] text-market-muted leading-relaxed">{{ fb.comment }}</p>
+                        {% if fb.image %}
+                        <div class="mt-4 w-24 h-24 border border-market-border">
+                            <img src="{{ fb.image.url }}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all cursor-pointer">
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="py-10 text-center border border-dashed border-market-border">
+                        <p class="text-market-muted uppercase tracking-[0.2em] text-[10px]">No Feedback Recorded Yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Right Column: Purchasing & Vendor (Sticky) -->
+    <aside class="lg:w-[35%] bg-market-surface/10 flex flex-col border-t lg:border-t-0 border-market-border overflow-y-auto">
+        
+        <!-- Transaction Block -->
+        <div class="p-6 lg:p-8 border-b border-market-border bg-market-surface/40">
+            <div class="flex gap-2 mb-4">
+                {% if product.product_type == 'PHYSICAL' %}
+                <span class="border border-market-border text-market-text text-[9px] px-2 py-1 uppercase tracking-widest">Physical Good</span>
+                {% else %}
+                <span class="border border-market-border text-market-text text-[9px] px-2 py-1 uppercase tracking-widest">Digital Asset</span>
+                {% endif %}
+                {% if product.is_escrow %}
+                <span class="border border-market-border text-market-text text-[9px] px-2 py-1 uppercase tracking-widest">Escrow Ready</span>
+                {% endif %}
+            </div>
+            
+            <h1 class="text-xl lg:text-2xl font-medium text-market-text leading-tight mb-6">
+                {{ product.name }}
+            </h1>
+
+            <div class="flex items-end justify-between mb-8 pb-6 border-b border-market-border/50">
+                <div>
+                    <div class="text-[28px] font-medium text-market-accent leading-none">{{ product.price_xmr }} XMR</div>
+                    <div class="text-market-muted text-[13px] mt-1">~ ${{ product.price_usd|default:"N/A" }} USD</div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex border border-market-border">
+                    <div class="px-4 py-3 border-r border-market-border bg-market-surface/50 text-market-muted flex items-center justify-center text-[10px] uppercase tracking-widest">
+                        QTY
+                    </div>
+                    <input type="number" value="1" readonly class="w-full bg-transparent text-market-text px-4 py-3 outline-none cursor-not-allowed">
+                </div>
+
+                <div class="flex gap-2">
+                    <a href="{% url 'checkout_step1' product.id %}" class="flex-grow bg-market-text text-market-bg hover:bg-white font-medium px-4 py-3 transition-colors text-[13px] uppercase tracking-wider text-center flex items-center justify-center">
+                        Purchase {% if product.is_escrow %}(Escrow){% endif %}
+                    </a>
+                    <button id="bookmark-btn" onclick="toggleBookmark({{ product.id }})" class="border border-market-border hover:border-market-text text-market-text px-4 py-3 transition-colors {% if is_bookmarked %}bg-market-text !text-market-bg{% endif %}">
+                        ★
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendor Dossier -->
+        <div class="p-6 lg:p-8 border-b border-market-border bg-market-bg">
+            <h2 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">Vendor Dossier</h2>
+            
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 border border-market-border bg-market-surface flex items-center justify-center text-market-text font-medium text-lg uppercase">
+                        {{ product.vendor.display_name|default:product.vendor.username|first }}
+                    </div>
+                    <div>
+                        <div class="text-market-text font-medium text-[15px] hover:underline cursor-pointer">{{ product.vendor.display_name|default:product.vendor.username }}</div>
+                        <div class="text-market-muted text-[11px]">Active recently</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-market-text font-medium">Level {{ product.vendor.vendor_level|default:"1" }}</div>
+                    <div class="text-market-muted text-[11px]">Trust Tier</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-px bg-market-border border border-market-border mb-6">
+                <div class="bg-market-bg p-3 text-center">
+                    <div class="text-[10px] text-market-muted uppercase tracking-wider mb-1">Trust Score</div>
+                    <div class="text-market-text font-medium text-[15px]">{{ trust_percentage }}% <span class="text-[10px] text-market-muted">Positive</span></div>
+                </div>
+                <div class="bg-market-bg p-3 text-center">
+                    <div class="text-[10px] text-market-muted uppercase tracking-wider mb-1">Avg Rating</div>
+                    <div class="text-market-text font-medium text-[15px]">{{ avg_rating|stringformat:".1f" }} <span class="text-[10px] text-market-muted">/ 5.0</span></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchProductTab(tabId) {
+        document.querySelectorAll('.product-tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.product-tab-btn').forEach(el => {
+            el.classList.remove('text-market-text', 'border-b-2', 'border-b-market-text', '-mb-[1px]');
+            el.classList.add('text-market-muted');
+        });
+        
+        document.getElementById('tab-content-' + tabId).classList.remove('hidden');
+        const activeTab = document.getElementById('tab-btn-' + tabId);
+        activeTab.classList.remove('text-market-muted');
+        activeTab.classList.add('text-market-text', 'border-b-2', 'border-b-market-text', '-mb-[1px]');
+    }
+
+    function setRating(val) {
+        document.getElementById('rating-input').value = val;
+        const stars = document.querySelectorAll('.rating-star');
+        stars.forEach((s, i) => {
+            if (i < val) s.classList.add('active');
+            else s.classList.remove('active');
+        });
+    }
+    function toggleBookmark(productId) {
+        fetch(`/bookmark/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const btn = document.getElementById('bookmark-btn');
+            if (data.status === 'added') {
+                btn.classList.add('bg-market-text', '!text-market-bg');
+            } else {
+                btn.classList.remove('bg-market-text', '!text-market-bg');
+            }
+        });
+    }
+
+    // Set default rating
+    setRating(5);
+</script>
+{% endblock %}

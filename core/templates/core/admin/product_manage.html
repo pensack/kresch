@@ -1,0 +1,51 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<a href="{% url 'admin_products' %}" class="text-[10px] uppercase tracking-[0.2em] text-market-muted hover:text-market-text">Assets</a>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">{{ product.name }}</span>
+<span class="text-market-borderFocus">/</span>
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-accent">Audit</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="p-8 max-w-5xl mx-auto space-y-8">
+    <div class="bg-market-surface border border-market-border p-8 flex flex-col md:flex-row items-center gap-8">
+        <div class="w-32 h-44 bg-market-bg border border-market-border shrink-0">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="w-full h-full object-cover">
+            {% endif %}
+        </div>
+        <div class="flex-grow space-y-4">
+            <h2 class="text-2xl font-medium text-market-text">{{ product.name }}</h2>
+            <p class="text-[12px] text-market-muted leading-relaxed">{{ product.description }}</p>
+            <div class="flex gap-6 text-[10px] uppercase tracking-widest text-market-accent">
+                <span>Vendor: {{ product.vendor.username }}</span>
+                <span>Category: {{ product.category.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted">Asset Controls</h3>
+            <div class="space-y-3">
+                <button class="w-full border border-market-border text-market-muted py-3 text-[10px] uppercase tracking-widest hover:border-market-text hover:text-market-text transition-all">Delist Asset</button>
+                <button class="w-full border border-market-error/50 text-market-error py-3 text-[10px] uppercase tracking-widest hover:bg-market-error/10 transition-all">Nuclear Deletion</button>
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-8 space-y-6">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted">Sensitive Payload</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[9px] text-market-muted uppercase block mb-2">Digital Content / Credentials</label>
+                    <div class="bg-black/60 p-4 font-mono text-[11px] text-market-sys border border-market-border">
+                        {{ product.digital_content|default:"No direct payload registered" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

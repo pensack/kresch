@@ -1,0 +1,95 @@
+<!-- Premium Glassmorphic Sidebar Component -->
+<div id="seller-sidebar" class="w-64 border-r border-white/[0.05] bg-black/40 backdrop-blur-2xl flex-shrink-0 flex flex-col transition-all duration-500 relative z-20 h-full min-h-screen shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
+    
+    <!-- Logo/Brand Area -->
+    <div class="h-20 flex items-center px-6 border-b border-white/[0.05] shrink-0 justify-between group">
+        <a href="{% url 'index' %}" class="font-medium text-lg tracking-[0.2em] text-white whitespace-nowrap overflow-hidden sidebar-text relative">
+            THE MARKET
+            <div class="absolute -bottom-1 left-0 w-1/2 h-[1px] bg-gradient-to-r from-blue-500 to-transparent"></div>
+        </a>
+        <button id="toggle-sidebar" class="text-gray-500 hover:text-white transition-colors duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-grow py-8 px-4 flex flex-col gap-2 overflow-y-auto">
+        <div class="sidebar-text text-[10px] uppercase tracking-[0.3em] text-gray-600 mb-2 px-3">Main Menu</div>
+        
+        <!-- Active Tab -->
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 bg-gradient-to-r from-blue-500/10 to-transparent border-l-2 border-blue-500 text-white transition-all duration-300 group">
+            <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <span class="text-xl w-6 text-center text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">⊞</span>
+            <span class="sidebar-text whitespace-nowrap text-sm font-medium tracking-wide">Overview</span>
+        </a>
+        
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/[0.02]">
+            <span class="text-xl w-6 text-center group-hover:scale-110 transition-transform">☰</span>
+            <span class="sidebar-text whitespace-nowrap text-sm tracking-wide">Listings</span>
+        </a>
+        
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/[0.02] justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-xl w-6 text-center group-hover:scale-110 transition-transform">📦</span>
+                <span class="sidebar-text whitespace-nowrap text-sm tracking-wide">Orders</span>
+            </div>
+            <span class="sidebar-text bg-blue-500/20 border border-blue-500/30 text-blue-400 px-2 py-0.5 text-[10px] font-bold rounded-full shadow-[0_0_10px_rgba(59,130,246,0.2)]">3</span>
+        </a>
+        
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/[0.02] justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-xl w-6 text-center group-hover:scale-110 transition-transform">✉</span>
+                <span class="sidebar-text whitespace-nowrap text-sm tracking-wide">Messages</span>
+            </div>
+            <div class="sidebar-text w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+        </a>
+        
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/[0.02]">
+            <span class="text-xl w-6 text-center group-hover:scale-110 transition-transform">💳</span>
+            <span class="sidebar-text whitespace-nowrap text-sm tracking-wide">Wallet</span>
+        </a>
+        
+        <div class="sidebar-text text-[10px] uppercase tracking-[0.3em] text-gray-600 mt-8 mb-2 px-3">System</div>
+        <a href="#" class="relative flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/[0.02]">
+            <span class="text-xl w-6 text-center group-hover:rotate-90 transition-transform duration-500">⚙</span>
+            <span class="sidebar-text whitespace-nowrap text-sm tracking-wide">Settings</span>
+        </a>
+    </nav>
+    
+    <!-- Vendor Profile Widget -->
+    <div class="p-6 border-t border-white/[0.05] bg-gradient-to-t from-black to-transparent shrink-0">
+        <div class="flex items-center gap-4 group cursor-pointer">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black border border-white/[0.1] flex items-center justify-center text-white text-sm font-medium shadow-lg relative">
+                DB
+                <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-black shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+            </div>
+            <div class="sidebar-text whitespace-nowrap overflow-hidden transition-all duration-300 group-hover:translate-x-1">
+                <div class="text-sm text-gray-200 font-medium tracking-wide">data_broker</div>
+                <div class="text-[11px] text-gray-500">Level 4 Merchant</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        const sidebar = document.getElementById('seller-sidebar');
+        const texts = document.querySelectorAll('.sidebar-text');
+        
+        if (sidebar.classList.contains('w-64')) {
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-20');
+            texts.forEach(el => {
+                el.style.opacity = '0';
+                setTimeout(() => el.style.display = 'none', 300);
+            });
+        } else {
+            sidebar.classList.remove('w-20');
+            sidebar.classList.add('w-64');
+            texts.forEach(el => {
+                el.style.display = '';
+                setTimeout(() => el.style.opacity = '1', 10);
+            });
+        }
+    });
+</script>

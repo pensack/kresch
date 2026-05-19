@@ -1,0 +1,125 @@
+/* --- THE MARKET: Global Industrial Styles --- */
+
+/* 1. Reset & Global Overrides */
+* {
+    border-radius: 0 !important;
+}
+
+body {
+    background-color: #030303;
+    color: #ececec;
+}
+
+select, input, textarea, button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* 2. Custom Scrollbar (High Density) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #030303;
+    border-left: 1px solid #222;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #222;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* 3. Reusable Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes growUp {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-fade-in { animation: fadeIn 0.4s ease-in-out; }
+.animate-pulse-danger { animation: pulse-danger 2s infinite; }
+
+/* 4. Tab System Logic */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 5. Industrial Table Design */
+.market-table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left;
+}
+
+.market-table th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #7a7a7a;
+    background-color: #0d0d0d;
+    font-weight: 500;
+    padding: 14px 16px;
+    border-bottom: 1px solid #222;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.market-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #222;
+    white-space: nowrap;
+}
+
+.market-table tr:hover td {
+    background-color: #141414;
+}
+
+/* 6. Utility Components */
+.mono-block {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.sidebar-transition {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 7. Bento Grid Extras */
+.spark-bar {
+    transform-origin: bottom;
+    animation: growUp 1s ease-out forwards;
+}
+
+.server-load {
+    transition: width 1s ease-in-out;
+}

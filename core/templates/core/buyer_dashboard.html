@@ -1,0 +1,185 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}User Terminal{% endblock %}
+{% block role_label %}{{ user.role }}{% endblock %}
+
+{% block sidebar %}
+<nav class="flex-grow flex flex-col py-4 gap-1 overflow-y-auto">
+    <div class="px-5 py-2 mb-2">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted font-medium">Activity</span>
+    </div>
+    <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-accent border-l-2 border-market-text bg-market-surfaceHover flex justify-between items-center group">
+        Orders
+        <span class="border border-market-border text-market-muted px-1.5 py-0.5 text-[9px] font-mono group-hover:text-market-text transition-colors">{{ orders.count }}</span>
+    </button>
+    <button onclick="switchTab('bookmarks')" id="tab-btn-bookmarks" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center group">
+        Bookmarks
+        <span class="border border-market-border text-market-muted px-1.5 py-0.5 text-[9px] font-mono group-hover:text-market-text transition-colors">{{ bookmarks.count }}</span>
+    </button>
+    <button onclick="switchTab('viewed')" id="tab-btn-viewed" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all">
+        Recently Viewed
+    </button>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- TAB: ORDERS -->
+<div id="tab-orders" class="tab-content active flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Order History</span>
+    </div>
+
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[800px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">ID</th>
+                    <th>Product</th>
+                    <th>Vendor</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th class="text-right pr-6">Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for o in orders %}
+                <tr class="hover:bg-market-surface/50 transition-colors">
+                    <td class="pl-6 font-mono text-market-muted">#{{ o.id }}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 border border-market-border bg-market-bg flex-shrink-0">
+                                {% if o.product.image %}
+                                <img src="{{ o.product.image.url }}" class="w-full h-full object-cover">
+                                {% endif %}
+                            </div>
+                            <span class="font-medium hover:underline cursor-pointer" onclick="window.location.href='{% url 'product_detail' o.product.id %}'">{{ o.product.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-market-sys font-mono">{{ o.product.vendor.display_name|default:o.product.vendor.username }}</td>
+                    <td class="font-mono">{{ o.amount_due_xmr }} XMR</td>
+                    <td>
+                        <span class="status-badge {% if o.status == 'PAID_IN_ESCROW' %}bg-market-successBg text-market-success border border-market-success/30{% else %}bg-market-surface text-market-muted border border-market-border{% endif %}">
+                            {{ o.status }}
+                        </span>
+                    </td>
+                    <td class="text-right pr-6 space-x-4">
+                        {% if o.status == 'AWAITING_PAYMENT' %}
+                        <a href="{% url 'checkout_step2' o.id %}" class="text-market-accent hover:underline uppercase tracking-widest text-[9px]">Pay Invoice</a>
+                        {% elif o.status == 'PAID_IN_ESCROW' or o.status == 'COMPLETED' %}
+                            {% if o.product.product_type == 'DIGITAL' %}
+                            <button onclick="revealAsset('{{ o.product.name|escapejs }}', '{{ o.product.digital_content|escapejs }}', '{{ o.product.usage_instructions|escapejs }}', false)" class="text-market-success hover:underline uppercase tracking-widest text-[9px]">Reveal Asset</button>
+                            {% elif o.product.product_type == 'ACCOUNT' %}
+                            <button onclick="revealAsset('{{ o.product.name|escapejs }}', '{{ o.product.digital_content|escapejs }}', '{{ o.product.usage_instructions|escapejs }}', true)" class="text-market-warning hover:underline uppercase tracking-widest text-[9px]">Reveal Credentials</button>
+                            {% endif %}
+                        {% endif %}
+                        <button class="text-market-muted hover:text-market-text underline uppercase tracking-widest text-[9px]">Rate</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-20 text-market-muted uppercase tracking-widest text-[11px]">No Activity Recorded</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB: BOOKMARKS -->
+<div id="tab-bookmarks" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Saved Interests</span>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto">
+        {% for b in bookmarks %}
+        <div class="bg-market-surface border border-market-border flex group hover:border-market-text transition-all">
+            <div class="w-24 h-32 bg-market-bg shrink-0 border-r border-market-border">
+                {% if b.product.image %}
+                <img src="{{ b.product.image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                {% endif %}
+            </div>
+            <div class="p-4 flex flex-col justify-between flex-grow">
+                <div>
+                    <h3 class="text-[13px] text-market-text font-medium leading-tight mb-1 truncate">{{ b.product.name }}</h3>
+                    <p class="text-[10px] text-market-muted uppercase tracking-widest">{{ b.product.vendor.username }}</p>
+                </div>
+                <div class="flex justify-between items-end">
+                    <span class="text-market-accent font-mono text-[14px]">{{ b.product.price_xmr }} XMR</span>
+                    <a href="{% url 'product_detail' b.product.id %}" class="text-[9px] uppercase tracking-widest text-market-muted hover:text-market-text underline">View</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-20 text-center text-market-muted uppercase tracking-widest text-[11px]">Archive Empty</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TAB: VIEWED -->
+<div id="tab-viewed" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Synchronized View History</span>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto">
+        {% for vp in viewed_products %}
+        <div class="bg-market-bg border border-market-border p-4 flex gap-4 hover:bg-market-surface/30 transition-all">
+            <div class="w-12 h-12 bg-market-surface shrink-0 border border-market-border">
+                {% if vp.product.image %}
+                <img src="{{ vp.product.image.url }}" class="w-full h-full object-cover grayscale opacity-50">
+                {% endif %}
+            </div>
+            <div class="overflow-hidden">
+                <h3 class="text-[12px] text-market-text truncate">{{ vp.product.name }}</h3>
+                <p class="text-[10px] text-market-muted font-mono">{{ vp.viewed_at|date:"Y-m-d H:i" }}</p>
+                <a href="{% url 'product_detail' vp.product.id %}" class="text-[9px] text-market-sys uppercase tracking-widest mt-1 inline-block">Return</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-20 text-center text-market-muted uppercase tracking-widest text-[11px]">No History Detected</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal: Asset Reveal -->
+<div id="asset-reveal-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-lg flex flex-col">
+        <div class="p-4 border-b border-market-border bg-market-surface flex justify-between items-center">
+            <span class="text-[11px] uppercase tracking-widest text-market-text font-medium">Decrypted Asset Data</span>
+            <button onclick="closeModal('asset-reveal-modal')" class="text-market-muted hover:text-market-text">✕</button>
+        </div>
+        <div class="p-8 space-y-6">
+            <h2 class="text-lg font-medium text-white mb-1" id="asset-title">Product Name</h2>
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest">Asset Payload</label>
+                    <div id="asset-payload" class="bg-black/60 border border-market-border p-5 text-[12px] text-market-success font-mono leading-relaxed break-all whitespace-pre-wrap select-all">Asset data...</div>
+                </div>
+                <div id="usage-container" class="space-y-2 hidden">
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest">Usage Instructions</label>
+                    <div id="asset-usage" class="bg-market-surface p-4 text-[11px] text-market-text leading-relaxed font-sans border-l-2 border-market-sys">Instructions...</div>
+                </div>
+            </div>
+            <div id="account-warning" class="bg-market-warningBg/30 border border-market-warning/40 p-4 text-[10px] text-market-warning leading-relaxed uppercase tracking-wider hidden">
+                <p class="font-bold mb-2">⚠️ SECURITY ALERT: SAFE PROTOCOL</p>
+                <p>Do not finalize this order until you have successfully logged in and changed all recovery information.</p>
+            </div>
+            <button onclick="closeModal('asset-reveal-modal')" class="w-full bg-market-text text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Close Terminal</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function revealAsset(title, content, usage = '', isAccount = false) {
+        document.getElementById('asset-title').innerText = title;
+        document.getElementById('asset-payload').innerText = content;
+        const usageContainer = document.getElementById('usage-container');
+        if (usage && usage !== 'None' && usage !== '') {
+            document.getElementById('asset-usage').innerText = usage;
+            usageContainer.classList.remove('hidden');
+        } else { usageContainer.classList.add('hidden'); }
+        const warning = document.getElementById('account-warning');
+        if (isAccount) { warning.classList.remove('hidden'); } else { warning.classList.add('hidden'); }
+        openModal('asset-reveal-modal');
+    }
+</script>
+{% endblock %}

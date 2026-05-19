@@ -1,0 +1,179 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block title %}Master Control - Admin Terminal{% endblock %}
+{% block role_label %}SYSTEM ADMIN{% endblock %}
+
+{% block sidebar %}
+<nav class="flex-grow flex flex-col py-4 gap-1 overflow-y-auto">
+    <div class="px-5 py-2 mb-2">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted font-medium">Core Systems</span>
+    </div>
+    <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-accent border-l-2 border-market-text bg-market-surfaceHover flex justify-between items-center group transition-all">
+        Overview
+    </button>
+    <button onclick="switchTab('users')" id="tab-btn-users" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center group">
+        User Registry
+    </button>
+    <button onclick="switchTab('finance')" id="tab-btn-finance" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all">
+        Finance Protocol
+    </button>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- TAB: OVERVIEW -->
+<div id="tab-overview" class="tab-content active flex-grow flex flex-col p-8 space-y-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Total Registry</span>
+            <span class="text-3xl font-mono text-market-text">{{ users.count }}</span>
+        </div>
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Active Sales</span>
+            <span class="text-3xl font-mono text-market-success">{{ total_sales }}</span>
+        </div>
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-market-muted">Asset Catalog</span>
+            <span class="text-3xl font-mono text-market-accent">{{ total_products }}</span>
+        </div>
+    </div>
+
+    <div class="bg-market-surface border border-market-border p-8">
+        <h2 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">System Status</h2>
+        <div class="space-y-4 font-mono text-[12px]">
+            <div class="flex justify-between items-center border-b border-market-border pb-4">
+                <span class="text-market-muted">Database Engine:</span>
+                <span class="text-market-success">SQLite (Transactional)</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-market-border pb-4">
+                <span class="text-market-muted">Encryption Core:</span>
+                <span class="text-market-sys">PGP v2.1</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-market-border pb-4">
+                <span class="text-market-muted">Escrow Protocol:</span>
+                <span class="text-market-warning">2-of-3 Multisig Mock</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: USERS -->
+<div id="tab-users" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Global User Registry</span>
+    </div>
+
+    <div class="flex-grow overflow-auto">
+        <table class="market-table min-w-[800px]">
+            <thead>
+                <tr>
+                    <th class="pl-6">UID</th>
+                    <th>Display Name</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th class="text-right pr-6">Access Control</th>
+                </tr>
+            </thead>
+            <tbody class="text-[12px] text-market-text">
+                {% for u in users %}
+                <tr class="hover:bg-market-surface/50 transition-colors">
+                    <td class="pl-6 font-mono text-market-muted">{{ u.username }}</td>
+                    <td>{{ u.display_name|default:"---" }}</td>
+                    <td>
+                        <select onchange="updateRole('{{ u.id }}', this.value)" class="bg-black/40 border border-market-border text-[10px] uppercase tracking-wider text-market-text py-1 px-2 outline-none focus:border-market-accent transition-colors">
+                            {% for role_code, role_name in role_choices %}
+                            <option value="{{ role_code }}" {% if u.role == role_code %}selected{% endif %}>{{ role_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="text-market-muted font-mono">{{ u.date_joined|date:"Y-m-d" }}</td>
+                    <td class="text-right pr-6">
+                        <button class="text-market-error hover:underline uppercase tracking-widest text-[9px]">Freeze Access</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB: FINANCE -->
+<div id="tab-finance" class="tab-content hidden flex-grow flex flex-col p-8">
+    <div class="max-w-4xl space-y-8">
+        <h2 class="text-[18px] text-market-text font-medium uppercase tracking-[0.2em]">Monero Multisig Finance Hub</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-market-surface border border-market-border p-8 space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest">Protocol Logic</label>
+                    <p class="text-[12px] text-market-text leading-relaxed">
+                        Funds are held in Order-Specific **Multisig Wallets**. To release funds, any 2 signatures are required.
+                    </p>
+                </div>
+                <div class="bg-market-sysBg/10 border border-market-sys/20 p-4 font-mono text-[11px] text-market-sys">
+                    Signature A: Buyer<br>
+                    Signature B: Vendor<br>
+                    Signature C: Admin (You)
+                </div>
+            </div>
+
+            <div class="bg-market-surface border border-market-border p-8 space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] text-market-muted uppercase tracking-widest">Revenue Split</label>
+                    <div class="flex gap-4">
+                        <div class="flex-grow bg-black/40 p-4 border border-market-border">
+                            <span class="text-2xl font-mono text-market-success">2%</span>
+                            <span class="text-[9px] uppercase block text-market-muted">Platform Tax</span>
+                        </div>
+                        <div class="flex-grow bg-black/40 p-4 border border-market-border">
+                            <span class="text-2xl font-mono text-market-accent">98%</span>
+                            <span class="text-[9px] uppercase block text-market-muted">Net Payout</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-market-surface border border-market-border p-8">
+            <h3 class="text-[11px] uppercase tracking-widest text-market-muted mb-6">Withdrawal Protocol</h3>
+            <div class="bg-black/60 p-6 font-mono text-[11px] text-market-success leading-relaxed border-l-2 border-market-success">
+                // System Call for Platform Settlement<br>
+                curl -X POST http://localhost:18082/json_rpc -d '{<br>
+                &nbsp;&nbsp;"jsonrpc":"2.0", "id":"0", "method":"transfer_split",<br>
+                &nbsp;&nbsp;"params": {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"destinations": [<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"amount": 980000000000, "address": "VENDOR_XMR_ADDR"},<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"amount": 20000000000, "address": "YOUR_ADMIN_WALLET"}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;]<br>
+                &nbsp;&nbsp;}<br>
+                }'
+            </div>
+            <p class="mt-6 text-[10px] text-market-muted italic uppercase tracking-widest">
+                Verification Required: Two-factor authentication and master key fingerprint must match for signature C.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateRole(userId, newRole) {
+        const formData = new FormData();
+        formData.append('role', newRole);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch(`/sysadmin/role/${userId}/`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Success feedback
+            } else {
+                alert('Access Denied: Master Override Required');
+                window.location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

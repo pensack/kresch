@@ -1,0 +1,80 @@
+{% extends 'core/admin/base.html' %}
+
+{% block breadcrumbs %}
+<span class="text-[10px] uppercase tracking-[0.2em] text-market-text">Taxonomy Management</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="flex flex-col h-full">
+    <div class="p-6 shrink-0 border-b border-market-border bg-market-surface flex justify-between items-center">
+        <h2 class="text-[11px] uppercase tracking-widest text-market-muted">Platform Hierarchy</h2>
+        <button onclick="openModal('add-category-modal')" class="bg-market-text text-market-bg px-3 py-1.5 text-[10px] uppercase tracking-widest font-medium hover:bg-white transition-all">Initialize New Sector</button>
+    </div>
+
+    <div class="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-auto">
+        {% for cat in categories %}
+        <div class="bg-market-surface border border-market-border p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-market-border pb-3">
+                <h3 class="text-[12px] uppercase tracking-[0.2em] text-market-accent font-medium">{{ cat.name }}</h3>
+                <span class="text-[9px] font-mono text-market-muted">{{ cat.children.count }} Sub-Levels</span>
+            </div>
+            <div class="space-y-2">
+                {% for sub in cat.children.all %}
+                <div class="flex justify-between items-center text-[11px] text-market-text">
+                    <span>{{ sub.name }}</span>
+                    <button class="text-market-muted hover:text-market-error text-[10px]">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            <button onclick="openSubModal('{{ cat.id }}', '{{ cat.name }}')" class="w-full border border-market-border py-2 text-[9px] uppercase tracking-widest text-market-muted hover:border-market-text hover:text-market-text transition-all">+ Append Sub-Level</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal: Add Category -->
+<div id="add-category-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-md p-8">
+        <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-6">Initialize New Sector</h2>
+        <form action="{% url 'manage_category' %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label class="text-[10px] text-market-muted uppercase tracking-widest mb-2 block">Category Name</label>
+                <input type="text" name="name" required class="w-full bg-black/40 border border-market-border p-3 text-market-text outline-none focus:border-market-accent font-mono">
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-grow bg-market-text text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Deploy Category</button>
+                <button type="button" onclick="closeModal('add-category-modal')" class="border border-market-border text-market-muted px-6 py-3 text-[11px] uppercase tracking-widest hover:text-market-text transition-all">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Subcategory -->
+<div id="add-sub-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-market-bg border border-market-border w-full max-w-md p-8">
+        <h2 class="text-[14px] uppercase tracking-[0.2em] text-market-text mb-2">New Sub-Level</h2>
+        <p id="parent-name-display" class="text-[10px] text-market-muted uppercase tracking-widest mb-6">Parent: Sector Name</p>
+        <form action="{% url 'manage_category' %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="parent-id-input">
+            <div>
+                <label class="text-[10px] text-market-muted uppercase tracking-widest mb-2 block">Subcategory Name</label>
+                <input type="text" name="name" required class="w-full bg-black/40 border border-market-border p-3 text-market-text outline-none focus:border-market-accent font-mono">
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-grow bg-market-text text-market-bg py-3 text-[11px] uppercase tracking-widest font-medium hover:bg-white transition-all">Append Sub-Sector</button>
+                <button type="button" onclick="closeModal('add-sub-modal')" class="border border-market-border text-market-muted px-6 py-3 text-[11px] uppercase tracking-widest hover:text-market-text transition-all">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openSubModal(parentId, parentName) {
+        document.getElementById('parent-id-input').value = parentId;
+        document.getElementById('parent-name-display').innerText = "Parent: " + parentName;
+        openModal('add-sub-modal');
+    }
+</script>
+{% endblock %}
