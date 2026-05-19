@@ -126,7 +126,8 @@ def seller_dashboard(request):
             category=get_object_or_404(Category, id=request.POST.get('category')),
             product_type=request.POST.get('product_type', 'PHYSICAL'),
             digital_content=request.POST.get('digital_content', ''),
-            usage_instructions=request.POST.get('usage_instructions', '')
+            usage_instructions=request.POST.get('usage_instructions', ''),
+            image=request.FILES.get('image')
         )
         return redirect('seller_dashboard')
         
