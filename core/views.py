@@ -439,6 +439,51 @@ def mod_verify_vendor(request, vendor_id):
     return redirect('mod_dashboard')
 
 @login_required
+def banned_view(request):
+    if request.user.ban_status == 'NONE':
+        return redirect('index')
+    return render(request, 'core/ban_screen.html')
+
+@login_required
+def mod_ban_vendor(request, vendor_id):
+    if request.user.role not in ['MODERATOR', 'ADMIN']:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    vendor = get_object_or_404(User, id=vendor_id, role='VENDOR')
+    if request.method == 'POST':
+        preset = request.POST.get('preset_reason', '')
+        custom = request.POST.get('custom_reason', '')
+        item_link = request.POST.get('item_link', '')
+        duration = request.POST.get('duration', 'PERMANENT')
+        
+        full_reason = f"{preset}. {custom}".strip('. ')
+        if item_link:
+            full_reason += f"\nOffending Item / Reference: {item_link}"
+            
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        if duration == 'PERMANENT':
+            vendor.ban_status = 'PERMANENT'
+            vendor.ban_expires_at = None
+        else:
+            vendor.ban_status = 'PAUSED'
+            if duration == '1_WEEK':
+                vendor.ban_expires_at = timezone.now() + timedelta(days=7)
+            elif duration == '1_MONTH':
+                vendor.ban_expires_at = timezone.now() + timedelta(days=30)
+            elif duration == '3_MONTHS':
+                vendor.ban_expires_at = timezone.now() + timedelta(days=90)
+                
+        vendor.ban_reason = full_reason
+        vendor.save()
+        
+        # Suspend all vendor products immediately
+        Product.objects.filter(vendor=vendor).update(status='SUSPENDED')
+        
+    return redirect('mod_dashboard')
+
+@login_required
 def resolve_dispute(request, order_id):
     if request.user.role not in ['MODERATOR', 'ADMIN']:
         return JsonResponse({'error': 'Unauthorized'}, status=403)

@@ -1,0 +1,69 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Terminal Lockout - Account Suspended{% endblock %}
+
+{% block content %}
+<main class="flex-grow flex items-center justify-center p-6 bg-black min-h-[calc(100vh-140px)]">
+    <div class="bg-market-surface border border-market-danger/40 w-full max-w-2xl p-8 lg:p-12 rounded-2xl shadow-2xl space-y-8 animate-fade-in relative overflow-hidden">
+        
+        <!-- Top Glow/Accent Bar -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-market-danger animate-pulse"></div>
+
+        <!-- Header / Lockout Icon -->
+        <div class="flex flex-col items-center text-center space-y-4">
+            <div class="w-20 h-20 bg-market-danger/10 border border-market-danger flex items-center justify-center rounded-full shadow-lg">
+                <svg class="w-10 h-10 text-market-danger animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold uppercase tracking-[0.2em] text-market-danger">Terminal Lockout Enforced</h1>
+                <p class="text-xs text-market-muted tracking-widest mt-1 uppercase">Marketplace Governance & Security Division</p>
+            </div>
+        </div>
+
+        <!-- Status & Reason Box -->
+        <div class="bg-black/60 border border-market-border p-6 rounded-xl space-y-4 font-mono text-xs shadow-inner">
+            <div class="flex justify-between items-center border-b border-market-border/60 pb-3">
+                <span class="text-market-muted uppercase tracking-wider">Lockout Status:</span>
+                <span class="font-bold px-3 py-1 rounded bg-market-dangerBg text-market-danger border border-market-danger/30 uppercase tracking-widest">
+                    {% if user.ban_status == 'PERMANENT' %}Permanent Suspension{% else %}Temporary Pause{% endif %}
+                </span>
+            </div>
+
+            {% if user.ban_status == 'PAUSED' and user.ban_expires_at %}
+            <div class="flex justify-between items-center border-b border-market-border/60 pb-3">
+                <span class="text-market-muted uppercase tracking-wider">Restoration Date:</span>
+                <span class="text-market-sys font-bold">{{ user.ban_expires_at|date:"F d, Y H:i" }} UTC</span>
+            </div>
+            {% endif %}
+
+            <div class="space-y-1 pt-1">
+                <span class="text-market-muted uppercase tracking-wider block">Recorded Violation / Reason:</span>
+                <p class="text-market-text bg-market-surface p-4 rounded border border-market-border/50 leading-relaxed whitespace-pre-wrap break-all">{{ user.ban_reason|default:"Policy violation detected by automated security sweep or moderation audit." }}</p>
+            </div>
+        </div>
+
+        <!-- Explicit Warning Box -->
+        <div class="bg-market-danger/10 border-l-4 border-market-danger p-5 rounded-r-xl space-y-2">
+            <h3 class="text-xs font-bold text-market-danger uppercase tracking-widest flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Critical Security Notice</span>
+            </h3>
+            <p class="text-xs text-market-muted leading-relaxed">
+                Attempting to circumvent this governance action by generating a new vendor account or alias will result in immediate, permanent suspension of all associated identities, public keys, and escrow access across the Sharp Store network.
+            </p>
+        </div>
+
+        <!-- Logout Action -->
+        <div class="pt-4 border-t border-market-border flex justify-center">
+            <form action="{% url 'logout' %}" method="POST" class="w-full sm:w-auto">
+                {% csrf_token %}
+                <button type="submit" class="w-full sm:w-auto bg-market-surfaceHover hover:bg-market-danger hover:text-white border border-market-border px-8 py-3.5 rounded-xl text-xs uppercase tracking-[0.2em] font-bold text-market-text transition-all shadow-lg flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span>Terminate Session (Logout)</span>
+                </button>
+            </form>
+        </div>
+        
+    </div>
+</main>
+{% endblock %}

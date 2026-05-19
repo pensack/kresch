@@ -38,6 +38,15 @@ class User(AbstractUser):
     verification_submitted_at = models.DateTimeField(null=True, blank=True)
     verification_reviewed_at = models.DateTimeField(null=True, blank=True)
     verified_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_vendors')
+    
+    BAN_CHOICES = [
+        ('NONE', 'Active'),
+        ('PAUSED', 'Temporarily Paused'),
+        ('PERMANENT', 'Permanently Banned'),
+    ]
+    ban_status = models.CharField(max_length=20, choices=BAN_CHOICES, default='NONE', db_index=True)
+    ban_reason = models.TextField(blank=True)
+    ban_expires_at = models.DateTimeField(null=True, blank=True)
 
     @staticmethod
     def generate_uid():

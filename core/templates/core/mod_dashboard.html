@@ -32,6 +32,9 @@
         <span class="w-2 h-2 bg-market-sys rounded-full animate-pulse"></span>
         {% endif %}
     </button>
+    <button onclick="switchTab('bans')" id="tab-btn-bans" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-danger border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
+        Vendor Bans & Pauses
+    </button>
 </nav>
 {% endblock %}
 
@@ -171,7 +174,130 @@
     </div>
 </div>
 
+<!-- TAB: VENDOR BANS & PAUSES -->
+<div id="tab-bans" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center shrink-0">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Governance Sector: Vendor Suspensions & Terminal Lockouts</span>
+    </div>
+    <div class="p-6 space-y-6 overflow-auto max-w-7xl mx-auto w-full">
+        <div class="bg-market-dangerBg border border-market-danger/30 p-4 rounded-xl flex items-center gap-3 shadow">
+            <div class="w-8 h-8 bg-market-danger/20 flex items-center justify-center rounded-full shrink-0 border border-market-danger/40">
+                <svg class="w-4 h-4 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <p class="text-xs text-market-muted"><strong class="text-market-danger">Middleware Enforcement:</strong> Banning or pausing a vendor immediately suspends their active catalog and intercepts their login sessions with an imposing terminal lockout screen.</p>
+        </div>
+
+        <div class="bg-market-surface border border-market-border rounded-xl shadow-lg overflow-hidden flex-grow flex flex-col">
+            <div class="overflow-x-auto flex-grow">
+                <table class="market-table min-w-[1000px] w-full">
+                    <thead>
+                        <tr>
+                            <th class="pl-6">Vendor ID</th>
+                            <th>Display Name / Username</th>
+                            <th>Lockout Status</th>
+                            <th>Restoration Date</th>
+                            <th>Recorded Reason</th>
+                            <th class="text-right pr-6">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-market-text divide-y divide-market-border">
+                        {% for u in users %}
+                        {% if u.role == 'VENDOR' %}
+                        <tr class="hover:bg-market-surfaceHover transition-colors">
+                            <td class="pl-6 font-mono text-market-muted">#{{ u.id }}</td>
+                            <td>
+                                <div class="font-bold text-market-accent">{{ u.display_name|default:u.username }}</div>
+                                <div class="text-[10px] text-market-muted font-mono">{{ u.email }}</div>
+                            </td>
+                            <td>
+                                {% if u.ban_status == 'PERMANENT' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-dangerBg text-market-danger border border-market-danger/30 inline-block">Permanent Ban</span>
+                                {% elif u.ban_status == 'PAUSED' %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-warningBg text-market-warning border border-market-warning/30 inline-block">Paused</span>
+                                {% else %}
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-market-successBg text-market-success border border-market-success/30 inline-block">Active</span>
+                                {% endif %}
+                            </td>
+                            <td class="font-mono text-market-sys">
+                                {% if u.ban_status == 'PAUSED' and u.ban_expires_at %}
+                                {{ u.ban_expires_at|date:"M d, Y" }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <p class="text-[11px] text-market-muted max-w-xs truncate font-mono" title="{{ u.ban_reason }}">{{ u.ban_reason|default:"-" }}</p>
+                            </td>
+                            <td class="text-right pr-6">
+                                <button onclick="openModBanModal({{ u.id }}, '{{ u.username|escapejs }}')" class="bg-market-surfaceHover hover:bg-market-danger hover:text-white border border-market-border px-3 py-1.5 rounded text-[11px] uppercase tracking-wider font-bold transition-all shadow">Suspend / Ban</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Moderator Vendor Ban & Pause -->
+<div id="mod-ban-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-danger/50 w-full max-w-lg rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-danger font-bold">Terminal Lockout & Suspension</h3>
+                <p id="ban-vendor-name" class="text-xs text-market-muted mt-1 font-bold">Managing Vendor #...</p>
+            </div>
+            <button onclick="closeModal('mod-ban-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <form id="mod-ban-form" method="POST" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label text-market-text">Preset Violation Reason</label>
+                    <select name="preset_reason" class="form-input rounded-lg cursor-pointer text-xs bg-market-bg">
+                        <option value="Prohibited Contraband / Policy Violation">Prohibited Contraband / Policy Violation</option>
+                        <option value="Scam / Persistent Failure to Deliver">Scam / Persistent Failure to Deliver</option>
+                        <option value="Evading Escrow / Direct Solicitation">Evading Escrow / Direct Solicitation</option>
+                        <option value="Multiple Marketplace Policy Violations">Multiple Marketplace Policy Violations</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label text-market-text">Custom Explanation / Sentence *</label>
+                    <textarea name="custom_reason" rows="3" required class="form-input rounded-lg text-xs" placeholder="Simple sentence detailing the exact infraction..."></textarea>
+                </div>
+                <div>
+                    <label class="form-label text-market-text">Offending Item Link / Reference (Optional)</label>
+                    <input type="text" name="item_link" class="form-input rounded-lg text-xs" placeholder="e.g. /product/123/ or Item #123">
+                </div>
+                <div>
+                    <label class="form-label text-market-danger font-bold">Lockout Duration</label>
+                    <select name="duration" class="form-input rounded-lg cursor-pointer text-xs bg-market-danger/10 border-market-danger/50 text-market-danger font-bold">
+                        <option value="PERMANENT">Permanent Suspension (Middleware Lockout)</option>
+                        <option value="1_WEEK">Temporary Pause (1 Week)</option>
+                        <option value="1_MONTH">Temporary Pause (1 Month)</option>
+                        <option value="3_MONTHS">Temporary Pause (3 Months)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-market-border flex justify-end gap-3">
+                <button type="button" onclick="closeModal('mod-ban-modal')" class="bg-market-surfaceHover border border-market-border text-market-text px-5 py-2.5 rounded text-xs uppercase tracking-widest font-medium">Cancel</button>
+                <button type="submit" class="bg-market-danger text-white px-6 py-2.5 rounded text-xs uppercase tracking-widest font-bold shadow">Enforce Lockout</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% include 'core/mod_tabs/products.html' %}
+
+<script>
+    function openModBanModal(vendorId, vendorName) {
+        document.getElementById('ban-vendor-name').innerText = "Managing Vendor: " + vendorName + " (#" + vendorId + ")";
+        document.getElementById('mod-ban-form').action = "/mod/ban/" + vendorId + "/";
+        openModal('mod-ban-modal');
+    }
+</script>
 
 <!-- Modal: Add Category -->
 <div id="add-category-modal" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
