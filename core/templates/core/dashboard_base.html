@@ -8,7 +8,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,25 +17,26 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
                         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
                     },
                     colors: {
                         market: {
-                            bg: '#0a0a0a',
-                            surface: '#121212',
-                            surfaceHover: '#1a1a1a',
-                            border: '#262626',
-                            borderFocus: '#404040',
+                            bg: '#050505',
+                            surface: '#0e0e0e',
+                            surfaceHover: '#161616',
+                            border: '#212121',
+                            borderFocus: '#333333',
                             text: '#f2f2f2',
-                            muted: '#8c8c8c',
+                            muted: '#888888',
                             accent: '#ffffff',
-                            danger: '#ef4444',
+                            danger: '#f87171',
                             dangerBg: '#1f0d0d',
-                            warning: '#f59e0b',
+                            warning: '#fbbf24',
                             warningBg: '#1f170d',
-                            success: '#10b981',
+                            success: '#34d399',
                             successBg: '#0d1f17',
-                            sys: '#3b82f6',
+                            sys: '#60a5fa',
                             sysBg: '#0d1527',
                         }
                     }
@@ -47,36 +48,53 @@
     <!-- Global CSS -->
     <link rel="stylesheet" href="{% static 'core/css/market.css' %}">
     
+    <style>
+        /* Custom Premium Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #212121;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333333;
+        }
+        /* Smooth Transitions */
+        * {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-market-bg text-market-text font-sans antialiased text-sm leading-relaxed selection:bg-market-text selection:text-market-bg h-screen flex flex-col overflow-hidden">
 
-<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg shadow-2xl">
+<div class="max-w-[1800px] w-full mx-auto h-full border-x border-market-border flex flex-col relative bg-market-bg shadow-2xl overflow-hidden">
     
     <!-- Top Header -->
-    <header class="flex justify-between items-center border-b border-market-border bg-market-surface/80 backdrop-blur-md px-4 lg:px-6 py-3 shrink-0 z-30 sticky top-0">
+    <header class="flex justify-between items-center border-b border-market-border bg-market-surface/90 backdrop-blur-xl px-4 lg:px-8 py-3.5 shrink-0 z-50 sticky top-0 shadow-lg">
         <div class="flex items-center gap-4">
-            <button id="mobile-menu-btn" class="lg:hidden text-market-muted hover:text-market-text transition-colors p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-market-borderFocus">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
+            <button id="mobile-menu-btn" onclick="toggleSidebar()" class="lg:hidden text-market-muted hover:text-market-accent transition-colors p-1.5 rounded-lg bg-market-bg border border-market-border focus:outline-none focus:border-market-borderFocus shadow">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <div class="font-bold text-base tracking-widest text-market-accent flex items-center gap-3">
+            <div class="font-display font-bold text-lg tracking-[0.25em] text-market-accent flex items-center gap-3 bg-gradient-to-r from-white via-neutral-300 to-neutral-500 bg-clip-text text-transparent">
                 THE MARKET
-                <span class="border-l border-market-border pl-3 text-market-muted font-normal text-xs uppercase tracking-[0.2em] hidden sm:block text-market-accent opacity-80">{% block role_label %}PORTAL{% endblock %}</span>
+                <span class="border-l border-market-border pl-3 text-market-muted font-mono font-normal text-xs uppercase tracking-[0.2em] hidden sm:block text-market-accent opacity-70">{% block role_label %}PORTAL{% endblock %}</span>
             </div>
         </div>
 
         {% block top_ticker %}{% endblock %}
 
-        <div class="flex items-center gap-4 border-l border-market-border pl-4 lg:pl-6">
-            <a href="{% url 'notifications' %}" class="relative group p-1 text-market-muted hover:text-market-text transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
+        <div class="flex items-center gap-4 border-l border-market-border pl-4 lg:pl-8 shrink-0">
+            <a href="{% url 'notifications' %}" class="relative group p-2 rounded-lg bg-market-bg border border-market-border hover:border-market-borderFocus text-market-muted hover:text-market-accent transition-all shadow">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </a>
             {% block user_profile %}{% endblock %}
         </div>
@@ -86,15 +104,15 @@
     <div class="flex flex-grow relative overflow-hidden w-full">
         
         <!-- Mobile Sidebar Backdrop Overlay -->
-        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity duration-300 opacity-0"></div>
+        <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300 opacity-0"></div>
 
         <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 border-r border-market-border bg-market-surface lg:bg-transparent lg:static lg:inset-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 mt-[57px] lg:mt-0 h-[calc(100vh-57px)] lg:h-auto">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 border-r border-market-border bg-market-surface lg:bg-transparent lg:static lg:inset-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0 mt-[61px] lg:mt-0 h-[calc(100vh-61px)] lg:h-auto shadow-2xl lg:shadow-none">
             {% block sidebar %}{% endblock %}
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-grow flex flex-col min-w-0 bg-market-bg overflow-y-auto w-full relative">
+        <main id="main-content" class="flex-grow flex flex-col min-w-0 bg-market-bg overflow-y-auto w-full relative">
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -112,7 +130,7 @@
 
         const buttons = document.querySelectorAll('.tab-btn');
         buttons.forEach(btn => {
-            btn.classList.remove('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium');
+            btn.classList.remove('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium', 'shadow-lg');
             btn.classList.add('text-market-muted', 'border-l-transparent');
         });
 
@@ -125,7 +143,7 @@
         const activeBtn = document.getElementById('tab-btn-' + tabId);
         if (activeBtn) {
             activeBtn.classList.remove('text-market-muted', 'border-l-transparent');
-            activeBtn.classList.add('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium');
+            activeBtn.classList.add('text-market-accent', 'border-l-market-accent', 'bg-market-surfaceHover', 'font-medium', 'shadow-lg');
         }
 
         if (updateHash) {
@@ -178,23 +196,11 @@
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const backdrop = document.getElementById('sidebar-backdrop');
-
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => toggleSidebar());
-        }
-
-        if (backdrop) {
-            backdrop.addEventListener('click', () => toggleSidebar(false));
-        }
-
         // Handle hash on load
         const hash = window.location.hash.substring(1);
         if (hash) {
             switchTab(hash, false);
         } else {
-            // Default to overview if no hash
             switchTab('overview', false);
         }
 

@@ -1,14 +1,14 @@
 {% extends 'core/dashboard_base.html' %}
 
-{% block title %}Vendor Dashboard{% endblock %}
-{% block role_label %}VENDOR{% endblock %}
+{% block title %}Vendor Terminal{% endblock %}
+{% block role_label %}VENDOR PORTAL{% endblock %}
 
 {% block extra_css %}
 <style>
 .form-input {
     width: 100%;
-    background: #0f0f0f;
-    border: 1px solid #262626;
+    background: #090909;
+    border: 1px solid #212121;
     color: #f2f2f2;
     padding: 0.85rem 1.15rem;
     font-size: 13px;
@@ -16,61 +16,68 @@
     transition: all 0.2s ease-in-out;
 }
 .form-input:focus {
-    border-color: #525252;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+    border-color: #404040;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
 }
 .form-label {
     display: block;
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #a3a3a3;
-    margin-bottom: 0.6rem;
-    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: #888888;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 </style>
 {% endblock %}
 
 {% block top_ticker %}
-<div class="hidden md:flex items-center px-6 gap-8 text-[11px] font-mono uppercase tracking-wider text-market-muted flex-grow">
-    <div class="flex items-center gap-2.5">
-        <span class="w-2 h-2 bg-market-success rounded-full animate-pulse"></span>
-        <span class="text-market-text font-medium">System: Online</span>
+<div class="hidden md:flex items-center px-8 gap-8 text-[11px] font-mono uppercase tracking-wider text-market-muted flex-grow">
+    <div class="flex items-center gap-3 bg-market-surface px-4 py-1.5 rounded-full border border-market-border shadow-inner">
+        <span class="w-2 h-2 bg-market-success rounded-full animate-pulse shadow-[0_0_8px_#34d399]"></span>
+        <span class="text-market-text font-bold tracking-widest">SYSTEM: ONLINE</span>
     </div>
     <div class="border-l border-market-border pl-8 flex items-center gap-2">
-        <span>Active Orders:</span>
-        <span class="text-market-accent font-bold">{{ received_orders.count|default:"0" }}</span>
+        <span>Active Escrow Orders:</span>
+        <span class="text-market-accent font-bold bg-market-surface px-3 py-1 rounded border border-market-border shadow">{{ received_orders.count|default:"0" }}</span>
     </div>
 </div>
 {% endblock %}
 
 {% block sidebar %}
-<nav class="flex-grow flex flex-col py-6 gap-1.5 overflow-y-auto px-3">
-    <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn w-full text-left px-4 py-3 text-xs uppercase tracking-[0.18em] text-market-accent border-l-2 border-market-accent bg-market-surfaceHover font-medium transition-all flex justify-between items-center group rounded-r-md">
+<nav class="flex-grow flex flex-col py-6 gap-2 overflow-y-auto px-4">
+    <div class="px-4 py-2 mb-2 border-b border-market-border/50">
+        <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-muted font-bold">Navigation Sector</span>
+    </div>
+
+    <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn w-full text-left px-4 py-3.5 text-xs uppercase tracking-[0.2em] text-market-accent border-l-2 border-market-accent bg-market-surfaceHover font-bold transition-all flex justify-between items-center group rounded-r-xl shadow-lg">
         <div class="flex items-center gap-3">
-            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <svg class="w-4 h-4 text-market-accent opacity-80 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             <span>Overview</span>
         </div>
     </button>
-    <button onclick="switchTab('listings')" id="tab-btn-listings" class="tab-btn w-full text-left px-4 py-3 text-xs uppercase tracking-[0.18em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/50 transition-all flex justify-between items-center group rounded-r-md">
+
+    <button onclick="switchTab('listings')" id="tab-btn-listings" class="tab-btn w-full text-left px-4 py-3.5 text-xs uppercase tracking-[0.2em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/60 transition-all flex justify-between items-center group rounded-r-xl">
         <div class="flex items-center gap-3">
-            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
             <span>My Listings</span>
         </div>
-        <span class="border border-market-border bg-market-bg text-market-text px-2 py-0.5 text-[10px] font-mono leading-none group-hover:border-market-borderFocus transition-colors rounded">{{ my_products.count }}</span>
+        <span class="border border-market-border bg-market-surface text-market-text px-2.5 py-1 text-[10px] font-mono font-bold leading-none group-hover:border-market-borderFocus transition-colors rounded-lg shadow">{{ my_products.count }}</span>
     </button>
-    <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-btn w-full text-left px-4 py-3 text-xs uppercase tracking-[0.18em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/50 transition-all flex justify-between items-center group rounded-r-md">
+
+    <button onclick="switchTab('orders')" id="tab-btn-orders" class="tab-btn w-full text-left px-4 py-3.5 text-xs uppercase tracking-[0.2em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/60 transition-all flex justify-between items-center group rounded-r-xl">
         <div class="flex items-center gap-3">
-            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
             <span>Orders</span>
         </div>
         {% if received_orders.count > 0 %}
-        <span class="bg-market-sys/20 text-market-sys border border-market-sys/30 px-2 py-0.5 text-[10px] font-mono leading-none rounded">{{ received_orders.count }}</span>
+        <span class="bg-market-sys/20 text-market-sys border border-market-sys/30 px-2.5 py-1 text-[10px] font-mono font-bold leading-none rounded-lg shadow">{{ received_orders.count }}</span>
         {% endif %}
     </button>
+
     <div class="mt-auto pt-6 border-t border-market-border">
-        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn w-full text-left px-4 py-3 text-xs uppercase tracking-[0.18em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/50 transition-all flex items-center gap-3 rounded-r-md group">
-            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn w-full text-left px-4 py-3.5 text-xs uppercase tracking-[0.2em] text-market-muted hover:text-market-accent border-l-2 border-transparent hover:bg-market-surfaceHover/60 transition-all flex items-center gap-3 rounded-r-xl group">
+            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
         </button>
     </div>
@@ -78,63 +85,72 @@
 {% endblock %}
 
 {% block content %}
-    {% if not request.user.xmr_multisig_pubkey %}
-    <div class="p-4 lg:p-8 shrink-0">
-        <div class="bg-market-dangerBg border border-market-danger/30 p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg shadow-lg">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-market-danger/20 flex items-center justify-center rounded-full shrink-0 border border-market-danger/40">
-                    <svg class="w-6 h-6 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="text-xs lg:text-sm text-market-danger uppercase tracking-widest font-bold">Action Required: Monero Spend Key Missing</h3>
-                    <p class="text-xs text-market-muted">You cannot receive payments or escrow deposits until you provide your Monero Public Spend Key in Settings.</p>
-                </div>
-            </div>
-            <button onclick="switchTab('settings')" class="w-full sm:w-auto bg-market-danger text-white px-6 py-2.5 text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-market-danger transition-all rounded shadow-md shrink-0">Go to Settings</button>
-        </div>
-    </div>
-    {% endif %}
+    <!-- Compact High-Tech Security HUD Container for Alerts -->
+    {% if not request.user.xmr_multisig_pubkey or request.user.verification_status != 'VERIFIED' %}
+    <div class="p-4 lg:p-8 pb-0 shrink-0 animate-fade-in">
+        <div class="bg-market-surface/60 backdrop-blur-md border border-market-border p-5 lg:p-6 rounded-2xl shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+            <!-- Glowing Accent Bar -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-market-danger via-market-warning to-market-sys animate-pulse"></div>
 
-    {% if request.user.verification_status == 'UNVERIFIED' %}
-    <div class="p-4 lg:p-8 pt-0 shrink-0">
-        <div class="bg-market-warningBg border border-market-warning/30 p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg shadow-lg">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-market-warning/20 flex items-center justify-center rounded-full shrink-0 border border-market-warning/40">
-                    <svg class="w-6 h-6 text-market-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-                <div class="space-y-1">
-                    <h3 class="text-xs lg:text-sm text-market-warning uppercase tracking-widest font-bold">Verification Required</h3>
-                    <p class="text-xs text-market-muted">You must submit your verification credentials and proof before publishing inventory.</p>
-                </div>
+            <div class="flex items-center gap-3 border-b border-market-border/60 pb-3">
+                <div class="w-3 h-3 rounded-full bg-market-warning animate-ping shadow-[0_0_8px_#fbbf24]"></div>
+                <span class="text-xs font-mono uppercase tracking-[0.25em] text-market-muted font-bold">Portal Security & Compliance HUD</span>
             </div>
-            <button onclick="openModal('verification-modal')" class="w-full sm:w-auto bg-market-warning text-market-warningBg px-6 py-2.5 text-xs uppercase tracking-widest font-bold hover:bg-white transition-all rounded shadow-md shrink-0">Submit Application</button>
-        </div>
-    </div>
-    {% elif request.user.verification_status == 'PENDING' %}
-    <div class="p-4 lg:p-8 pt-0 shrink-0">
-        <div class="bg-market-sysBg border border-market-sys/30 p-5 lg:p-6 flex items-center gap-4 rounded-lg shadow-lg">
-            <div class="w-12 h-12 bg-market-sys/20 flex items-center justify-center rounded-full shrink-0 border border-market-sys/40 animate-pulse">
-                <svg class="w-6 h-6 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <div class="space-y-1">
-                <h3 class="text-xs lg:text-sm text-market-sys uppercase tracking-widest font-bold">Verification Under Review</h3>
-                <p class="text-xs text-market-muted">Your application is currently being evaluated by a marketplace moderator. We will notify you once approved.</p>
-            </div>
-        </div>
-    </div>
-    {% elif request.user.verification_status == 'REJECTED' %}
-    <div class="p-4 lg:p-8 pt-0 shrink-0">
-        <div class="bg-market-dangerBg border border-market-danger/30 p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg shadow-lg">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-market-danger/20 flex items-center justify-center rounded-full shrink-0 border border-market-danger/40">
-                    <svg class="w-6 h-6 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% if not request.user.xmr_multisig_pubkey %}
+                <div class="bg-market-dangerBg/80 border border-market-danger/30 p-4 rounded-xl flex flex-col justify-between gap-4 shadow-lg hover:border-market-danger/50 transition-all">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-market-danger/20 rounded-lg border border-market-danger/40 shrink-0">
+                            <svg class="w-5 h-5 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-market-danger uppercase tracking-widest">Monero Spend Key Missing</h4>
+                            <p class="text-[11px] text-market-muted leading-relaxed">Escrow deposits and direct payments are currently locked. Configure your public spend key to enable commerce.</p>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('settings')" class="w-full bg-market-danger text-white hover:bg-white hover:text-market-danger py-2 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow">Configure Spend Key</button>
                 </div>
-                <div class="space-y-1">
-                    <h3 class="text-xs lg:text-sm text-market-danger uppercase tracking-widest font-bold">Application Rejected</h3>
-                    <p class="text-xs text-market-muted">Reason: <span class="text-market-text font-medium">{{ request.user.verification_notes }}</span></p>
+                {% endif %}
+
+                {% if request.user.verification_status == 'UNVERIFIED' %}
+                <div class="bg-market-warningBg/80 border border-market-warning/30 p-4 rounded-xl flex flex-col justify-between gap-4 shadow-lg hover:border-market-warning/50 transition-all">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-market-warning/20 rounded-lg border border-market-warning/40 shrink-0">
+                            <svg class="w-5 h-5 text-market-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-market-warning uppercase tracking-widest">Verification Required</h4>
+                            <p class="text-[11px] text-market-muted leading-relaxed">Merchant verification is required prior to public catalog indexing. Submit your PGP statement and reputation links.</p>
+                        </div>
+                    </div>
+                    <button onclick="openModal('verification-modal')" class="w-full bg-market-warning text-market-warningBg hover:bg-white py-2 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow">Submit Application</button>
                 </div>
+                {% elif request.user.verification_status == 'PENDING' %}
+                <div class="bg-market-sysBg/80 border border-market-sys/30 p-4 rounded-xl flex items-center gap-4 shadow-lg">
+                    <div class="p-2 bg-market-sys/20 rounded-lg border border-market-sys/40 shrink-0 animate-pulse">
+                        <svg class="w-5 h-5 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="text-xs font-bold text-market-sys uppercase tracking-widest">Verification Under Review</h4>
+                        <p class="text-[11px] text-market-muted leading-relaxed">Your application is currently being evaluated by a marketplace moderator. We will notify you once approved.</p>
+                    </div>
+                </div>
+                {% elif request.user.verification_status == 'REJECTED' %}
+                <div class="bg-market-dangerBg/80 border border-market-danger/30 p-4 rounded-xl flex flex-col justify-between gap-4 shadow-lg hover:border-market-danger/50 transition-all">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-market-danger/20 rounded-lg border border-market-danger/40 shrink-0">
+                            <svg class="w-5 h-5 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-market-danger uppercase tracking-widest">Application Rejected</h4>
+                            <p class="text-[11px] text-market-muted leading-relaxed">Reason: <span class="text-market-text font-mono">{{ request.user.verification_notes }}</span></p>
+                        </div>
+                    </div>
+                    <button onclick="openModal('verification-modal')" class="w-full bg-market-danger text-white hover:bg-white hover:text-market-danger py-2 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow">Re-submit Application</button>
+                </div>
+                {% endif %}
             </div>
-            <button onclick="openModal('verification-modal')" class="w-full sm:w-auto bg-market-danger text-white px-6 py-2.5 text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-market-danger transition-all rounded shadow-md shrink-0">Re-submit Application</button>
         </div>
     </div>
     {% endif %}
@@ -160,16 +176,16 @@
         <form method="POST" action="{% url 'submit_verification' %}" class="p-6 lg:p-8 space-y-6">
             {% csrf_token %}
             <div class="space-y-3">
-                <label class="block text-xs uppercase tracking-widest text-market-muted font-medium">Verification Proof & Reputation Links</label>
-                <textarea name="verification_proof" rows="6" required class="w-full bg-market-bg border border-market-border rounded-lg p-4 text-xs font-mono text-market-text outline-none focus:border-market-sys transition-all shadow-inner" placeholder="Provide PGP signed statements, links to previous marketplace profiles (e.g. Dread/Pitch), or escrow public spend key validation..."></textarea>
+                <label class="block text-xs uppercase tracking-widest text-market-muted font-bold">Verification Proof & Reputation Links</label>
+                <textarea name="verification_proof" rows="6" required class="w-full bg-market-bg border border-market-border rounded-xl p-4 text-xs font-mono text-market-text outline-none focus:border-market-sys transition-all shadow-inner" placeholder="Provide PGP signed statements, links to previous marketplace profiles (e.g. Dread/Pitch), or escrow public spend key validation..."></textarea>
                 <p class="text-[11px] text-market-muted">Moderators review these details to ensure merchant authenticity before approving catalog access.</p>
             </div>
 
             <div class="pt-4 border-t border-market-border flex justify-end gap-4">
-                <button type="button" onclick="closeModal('verification-modal')" class="bg-market-surfaceHover border border-market-border text-market-text hover:bg-market-border px-6 py-3 rounded-lg text-xs uppercase tracking-widest font-medium transition-all">
+                <button type="button" onclick="closeModal('verification-modal')" class="bg-market-surfaceHover border border-market-border text-market-text hover:bg-market-border px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-medium transition-all">
                     Cancel
                 </button>
-                <button type="submit" class="bg-market-sys text-white hover:bg-market-sys/80 px-8 py-3 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow-lg">
+                <button type="submit" class="bg-market-sys text-white hover:bg-market-sys/80 px-8 py-3 rounded-xl text-xs uppercase tracking-widest font-bold transition-all shadow-lg">
                     Submit Application
                 </button>
             </div>
