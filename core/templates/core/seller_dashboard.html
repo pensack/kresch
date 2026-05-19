@@ -94,11 +94,89 @@
         </div>
     </div>
     {% endif %}
+
+    {% if request.user.verification_status == 'UNVERIFIED' %}
+    <div class="p-4 lg:p-8 pt-0 shrink-0">
+        <div class="bg-market-warningBg border border-market-warning/30 p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg shadow-lg">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-market-warning/20 flex items-center justify-center rounded-full shrink-0 border border-market-warning/40">
+                    <svg class="w-6 h-6 text-market-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-xs lg:text-sm text-market-warning uppercase tracking-widest font-bold">Verification Required</h3>
+                    <p class="text-xs text-market-muted">You must submit your verification credentials and proof before publishing inventory.</p>
+                </div>
+            </div>
+            <button onclick="openModal('verification-modal')" class="w-full sm:w-auto bg-market-warning text-market-warningBg px-6 py-2.5 text-xs uppercase tracking-widest font-bold hover:bg-white transition-all rounded shadow-md shrink-0">Submit Application</button>
+        </div>
+    </div>
+    {% elif request.user.verification_status == 'PENDING' %}
+    <div class="p-4 lg:p-8 pt-0 shrink-0">
+        <div class="bg-market-sysBg border border-market-sys/30 p-5 lg:p-6 flex items-center gap-4 rounded-lg shadow-lg">
+            <div class="w-12 h-12 bg-market-sys/20 flex items-center justify-center rounded-full shrink-0 border border-market-sys/40 animate-pulse">
+                <svg class="w-6 h-6 text-market-sys" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-xs lg:text-sm text-market-sys uppercase tracking-widest font-bold">Verification Under Review</h3>
+                <p class="text-xs text-market-muted">Your application is currently being evaluated by a marketplace moderator. We will notify you once approved.</p>
+            </div>
+        </div>
+    </div>
+    {% elif request.user.verification_status == 'REJECTED' %}
+    <div class="p-4 lg:p-8 pt-0 shrink-0">
+        <div class="bg-market-dangerBg border border-market-danger/30 p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg shadow-lg">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-market-danger/20 flex items-center justify-center rounded-full shrink-0 border border-market-danger/40">
+                    <svg class="w-6 h-6 text-market-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-xs lg:text-sm text-market-danger uppercase tracking-widest font-bold">Application Rejected</h3>
+                    <p class="text-xs text-market-muted">Reason: <span class="text-market-text font-medium">{{ request.user.verification_notes }}</span></p>
+                </div>
+            </div>
+            <button onclick="openModal('verification-modal')" class="w-full sm:w-auto bg-market-danger text-white px-6 py-2.5 text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-market-danger transition-all rounded shadow-md shrink-0">Re-submit Application</button>
+        </div>
+    </div>
+    {% endif %}
     
     {% include 'core/seller_tabs/overview.html' %}
     {% include 'core/seller_tabs/listings.html' %}
     {% include 'core/seller_tabs/orders.html' %}
     {% include 'core/seller_tabs/settings.html' %}
+
+<!-- Modal: Verification Application -->
+<div id="verification-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-market-surface border border-market-border w-full max-w-xl rounded-2xl flex flex-col shadow-2xl my-8 overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-market-border bg-market-surfaceHover flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-base uppercase tracking-widest text-market-accent font-bold">Vendor Verification Application</h3>
+                <p class="text-xs text-market-muted mt-1">Submit your credentials and proof of reputation</p>
+            </div>
+            <button onclick="closeModal('verification-modal')" class="text-market-muted hover:text-market-accent p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-market-borderFocus transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <form method="POST" action="{% url 'submit_verification' %}" class="p-6 lg:p-8 space-y-6">
+            {% csrf_token %}
+            <div class="space-y-3">
+                <label class="block text-xs uppercase tracking-widest text-market-muted font-medium">Verification Proof & Reputation Links</label>
+                <textarea name="verification_proof" rows="6" required class="w-full bg-market-bg border border-market-border rounded-lg p-4 text-xs font-mono text-market-text outline-none focus:border-market-sys transition-all shadow-inner" placeholder="Provide PGP signed statements, links to previous marketplace profiles (e.g. Dread/Pitch), or escrow public spend key validation..."></textarea>
+                <p class="text-[11px] text-market-muted">Moderators review these details to ensure merchant authenticity before approving catalog access.</p>
+            </div>
+
+            <div class="pt-4 border-t border-market-border flex justify-end gap-4">
+                <button type="button" onclick="closeModal('verification-modal')" class="bg-market-surfaceHover border border-market-border text-market-text hover:bg-market-border px-6 py-3 rounded-lg text-xs uppercase tracking-widest font-medium transition-all">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-market-sys text-white hover:bg-market-sys/80 px-8 py-3 rounded-lg text-xs uppercase tracking-widest font-bold transition-all shadow-lg">
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}

@@ -20,6 +20,12 @@
     <button onclick="switchTab('categories')" id="tab-btn-categories" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all">
         Categories
     </button>
+    <button onclick="switchTab('vendors')" id="tab-btn-vendors" class="tab-btn w-full text-left px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] text-market-muted border-l-2 border-transparent hover:bg-market-surface/30 transition-all flex justify-between items-center">
+        Vendor Applications
+        {% if pending_vendors.count %}
+        <span class="w-2 h-2 bg-market-sys rounded-full animate-pulse"></span>
+        {% endif %}
+    </button>
 </nav>
 {% endblock %}
 
@@ -119,6 +125,42 @@
             </div>
             <button onclick="openSubModal('{{ cat.id }}', '{{ cat.name }}')" class="w-full border border-market-border py-2 text-[9px] uppercase tracking-widest text-market-muted hover:border-market-text hover:text-market-text transition-all">+ Add Subcategory</button>
         </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TAB: VENDOR APPLICATIONS -->
+<div id="tab-vendors" class="tab-content hidden flex-grow flex flex-col">
+    <div class="border-b border-market-border bg-market-surface p-4 flex justify-between items-center">
+        <span class="text-[10px] uppercase tracking-widest text-market-muted px-2">Vendor Verification Review Queue</span>
+    </div>
+    <div class="p-6 space-y-6 overflow-auto">
+        {% for v in pending_vendors %}
+        <div class="bg-market-surface border border-market-border p-6 flex flex-col md:flex-row justify-between gap-6 rounded-xl shadow-lg">
+            <div class="space-y-3 flex-grow">
+                <div class="flex items-center gap-3">
+                    <span class="text-market-accent font-bold text-sm">{{ v.username }}</span>
+                    <span class="text-[10px] uppercase tracking-widest bg-market-sysBg text-market-sys px-2 py-0.5 border border-market-sys/30 rounded">Pending Verification</span>
+                </div>
+                <div class="bg-market-bg p-4 rounded-lg border border-market-border font-mono text-xs text-market-muted space-y-2">
+                    <div><strong class="text-market-text">PGP Key:</strong> {% if v.pgp_public_key %}Provided{% else %}Missing{% endif %}</div>
+                    <div><strong class="text-market-text">Monero Spend Key:</strong> {% if v.xmr_multisig_pubkey %}Provided{% else %}Missing{% endif %}</div>
+                    <div class="pt-2 border-t border-market-border/50"><strong class="text-market-accent block mb-1">Submitted Proof / Links:</strong> <p class="whitespace-pre-wrap break-all text-market-text">{{ v.verification_proof }}</p></div>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center shrink-0">
+                <form action="{% url 'mod_verify_vendor' v.id %}" method="POST" class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="notes" placeholder="Optional notes/rejection reason..." class="bg-market-bg border border-market-border rounded px-3 py-2 text-xs text-market-text outline-none focus:border-market-sys">
+                    <div class="flex gap-2">
+                        <button type="submit" name="action" value="APPROVE" class="bg-market-success text-market-successBg px-4 py-2 rounded text-xs uppercase tracking-widest font-bold hover:bg-white transition-all">Approve</button>
+                        <button type="submit" name="action" value="REJECT" class="bg-market-danger text-white px-4 py-2 rounded text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-market-danger transition-all">Reject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="py-20 text-center text-market-muted uppercase tracking-widest text-xs">No Pending Vendor Applications</div>
         {% endfor %}
     </div>
 </div>

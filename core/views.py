@@ -111,6 +111,15 @@ def seller_dashboard(request):
         return redirect('index')
     
     if request.method == 'POST':
+        if request.user.verification_status != 'VERIFIED':
+            Notification.objects.create(
+                user=request.user,
+                title="Action Denied: Verification Required",
+                content="Your account must be fully verified by a moderator before you can create listings.",
+                link="/seller/"
+            )
+            return redirect('seller_dashboard')
+
         spec_raw = request.POST.get('specifications', '{}')
         try:
             specs = json.loads(spec_raw)
@@ -162,6 +171,27 @@ def update_vendor_settings(request):
     return redirect('seller_dashboard')
 
 @login_required
+def submit_verification(request):
+    if request.user.role != 'VENDOR':
+        return redirect('index')
+        
+    if request.method == 'POST':
+        request.user.verification_proof = request.POST.get('verification_proof', '')
+        request.user.verification_status = 'PENDING'
+        from django.utils import timezone
+        request.user.verification_submitted_at = timezone.now()
+        request.user.save()
+        
+        Notification.objects.create(
+            user=request.user,
+            title="Verification Submitted",
+            content="Your application has been received and is currently under review by our moderation team.",
+            link="/seller/"
+        )
+        
+    return redirect('seller_dashboard')
+
+@login_required
 def buyer_dashboard(request):
     orders = Order.objects.filter(buyer=request.user).select_related('product', 'product__vendor').order_by('-created_at')
     bookmarks = Bookmark.objects.filter(user=request.user).select_related('product', 'product__vendor').order_by('-created_at')
@@ -194,6 +224,7 @@ def mod_dashboard(request):
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('children')
     
     disputed_orders = orders.filter(status='DISPUTED')
+    pending_vendors = User.objects.filter(role='VENDOR', verification_status='PENDING').order_by('-verification_submitted_at')
     
     context = {
         'users': users,
@@ -201,6 +232,7 @@ def mod_dashboard(request):
         'orders': orders,
         'categories': categories,
         'disputed_orders': disputed_orders,
+        'pending_vendors': pending_vendors,
     }
     return render(request, 'core/mod_dashboard.html', context)
 
@@ -219,6 +251,59 @@ def manage_category(request):
             
         Category.objects.create(name=name, parent=parent)
         return redirect('mod_dashboard')
+    return redirect('mod_dashboard')
+
+@login_required
+def mod_verify_vendor(request, vendor_id):
+    if request.user.role not in ['MODERATOR', 'ADMIN']:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    vendor = get_object_or_404(User, id=vendor_id, role='VENDOR')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        notes = request.POST.get('notes', '')
+        from django.utils import timezone
+        
+        if action == 'APPROVE':
+            vendor.verification_status = 'VERIFIED'
+            vendor.verification_notes = notes
+            vendor.verified_by = request.user
+            vendor.verification_reviewed_at = timezone.now()
+            vendor.save()
+            
+            Notification.objects.create(
+                user=vendor,
+                title="Vendor Verification Approved",
+                content="Congratulations! Your account verification has been approved by a moderator. You can now publish inventory.",
+                link="/seller/"
+            )
+        elif action == 'REJECT':
+            vendor.verification_status = 'REJECTED'
+            vendor.verification_notes = notes
+            vendor.save()
+            
+            Notification.objects.create(
+                user=vendor,
+                title="Verification Application Rejected",
+                content=f"Your verification application was rejected. Reason: {notes}",
+                link="/seller/"
+            )
+        elif action == 'REVOKE':
+            vendor.verification_status = 'UNVERIFIED'
+            vendor.verification_notes = notes
+            vendor.verified_by = None
+            vendor.save()
+            
+            Product.objects.filter(vendor=vendor, is_active=True).update(is_active=False)
+            
+            Notification.objects.create(
+                user=vendor,
+                title="Verification Revoked",
+                content=f"Your vendor verification has been revoked by a moderator. Reason: {notes}. All active listings have been suspended.",
+                link="/seller/"
+            )
+            
     return redirect('mod_dashboard')
 
 @login_required

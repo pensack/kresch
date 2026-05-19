@@ -25,6 +25,20 @@ class User(AbstractUser):
     total_sales = models.PositiveIntegerField(default=0)
     vendor_level = models.PositiveIntegerField(default=1)
 
+    # Vendor Verification & Governance
+    VERIFICATION_CHOICES = [
+        ('UNVERIFIED', 'Unverified'),
+        ('PENDING', 'Pending Review'),
+        ('VERIFIED', 'Verified'),
+        ('REJECTED', 'Rejected'),
+    ]
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_CHOICES, default='UNVERIFIED', db_index=True)
+    verification_proof = models.TextField(blank=True, help_text="PGP signed statement of intent, past marketplace rep links, or identity proof.")
+    verification_notes = models.TextField(blank=True, help_text="Moderator feedback or rejection reasons visible to the vendor.")
+    verification_submitted_at = models.DateTimeField(null=True, blank=True)
+    verification_reviewed_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_vendors')
+
     @staticmethod
     def generate_uid():
         alphabet = string.ascii_uppercase + string.digits
