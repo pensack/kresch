@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F
-from .models import Product, Category, Order, User, Feedback, Bookmark, ViewedProduct, Message, Notification, VendorProfile
+from .models import Product, Category, Order, User, Feedback, Bookmark, ViewedProduct, Message, Notification
 import uuid
 import json
 import traceback
@@ -439,9 +439,7 @@ def signup_view(request):
                 key_fingerprint=fingerprint,
                 role=role
             )
-            if role == 'VENDOR':
-                VendorProfile.objects.create(user=user)
-                
+
             login(request, user)
             
             redirect_url = '/seller/' if role == 'VENDOR' else '/browse/'
