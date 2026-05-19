@@ -342,6 +342,9 @@ def mod_dashboard(request):
     disputed_orders = orders.filter(status='DISPUTED')
     pending_vendors = User.objects.filter(role='VENDOR', verification_status='PENDING').order_by('-verification_submitted_at')
     
+    active_merchants_count = User.objects.filter(role='VENDOR', verification_status='VERIFIED').count()
+    sanctioned_users_count = User.objects.filter(ban_status__in=['PAUSED', 'PERMANENT']).count()
+    
     context = {
         'users': users,
         'products': products,
@@ -354,6 +357,8 @@ def mod_dashboard(request):
         'categories': categories,
         'disputed_orders': disputed_orders,
         'pending_vendors': pending_vendors,
+        'active_merchants_count': active_merchants_count,
+        'sanctioned_users_count': sanctioned_users_count,
     }
     return render(request, 'core/mod_dashboard.html', context)
 

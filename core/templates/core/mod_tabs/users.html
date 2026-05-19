@@ -29,7 +29,7 @@
         </div>
         <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
             <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-sys">Active Merchants</span>
-            <div class="text-2xl font-display font-bold text-market-sys mt-2">{% filter length %}{% for u in users %}{% if u.role == 'VENDOR' and u.verification_status == 'VERIFIED' %}1{% endif %}{% endfor %}{% endfilter %}</div>
+            <div class="text-2xl font-display font-bold text-market-sys mt-2">{{ active_merchants_count }}</div>
         </div>
         <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
             <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-warning">Pending Review</span>
@@ -37,7 +37,7 @@
         </div>
         <div class="bg-gradient-to-r from-market-surface via-market-surfaceHover to-market-surface border border-market-border p-5 rounded-2xl shadow-xl flex flex-col justify-between">
             <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-market-danger">Sanctioned / Paused</span>
-            <div class="text-2xl font-display font-bold text-market-danger mt-2">{% filter length %}{% for u in users %}{% if u.ban_status != 'NONE' %}1{% endif %}{% endfor %}{% endfilter %}</div>
+            <div class="text-2xl font-display font-bold text-market-danger mt-2">{{ sanctioned_users_count }}</div>
         </div>
     </div>
 
