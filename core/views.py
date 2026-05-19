@@ -27,7 +27,7 @@ def browse(request):
     from django.db.models import Avg
     ptype = request.GET.get('type')
     
-    products = Product.objects.all().select_related('vendor', 'category')
+    products = Product.objects.filter(status='ACTIVE').select_related('vendor', 'category')
     if ptype:
         products = products.filter(product_type=ptype.upper())
         
@@ -47,6 +47,10 @@ def browse(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Product.objects.select_related('vendor', 'category'), pk=pk)
+    
+    if product.status != 'ACTIVE':
+        if request.user != product.vendor and request.user.role not in ['MODERATOR', 'ADMIN']:
+            return render(request, '404.html', {'reason': 'This product is pending verification or currently offline.'}, status=404)
     
     # Increment global views
     Product.objects.filter(pk=pk).update(views_count=F('views_count') + 1)
@@ -111,21 +115,13 @@ def seller_dashboard(request):
         return redirect('index')
     
     if request.method == 'POST':
-        if request.user.verification_status != 'VERIFIED':
-            Notification.objects.create(
-                user=request.user,
-                title="Action Denied: Verification Required",
-                content="Your account must be fully verified by a moderator before you can create listings.",
-                link="/seller/"
-            )
-            return redirect('seller_dashboard')
-
         spec_raw = request.POST.get('specifications', '{}')
         try:
             specs = json.loads(spec_raw)
         except:
             specs = {}
             
+        prod_status = 'ACTIVE' if request.user.verification_status == 'VERIFIED' else 'PENDING'
         Product.objects.create(
             name=request.POST.get('name'),
             description=request.POST.get('description'),
@@ -136,7 +132,8 @@ def seller_dashboard(request):
             product_type=request.POST.get('product_type', 'PHYSICAL'),
             digital_content=request.POST.get('digital_content', ''),
             usage_instructions=request.POST.get('usage_instructions', ''),
-            image=request.FILES.get('image')
+            image=request.FILES.get('image'),
+            status=prod_status
         )
         return redirect('seller_dashboard')
         
@@ -272,6 +269,8 @@ def mod_verify_vendor(request, vendor_id):
             vendor.verification_reviewed_at = timezone.now()
             vendor.save()
             
+            Product.objects.filter(vendor=vendor, status='PENDING').update(status='ACTIVE')
+            
             Notification.objects.create(
                 user=vendor,
                 title="Vendor Verification Approved",
@@ -295,7 +294,7 @@ def mod_verify_vendor(request, vendor_id):
             vendor.verified_by = None
             vendor.save()
             
-            Product.objects.filter(vendor=vendor, is_active=True).update(is_active=False)
+            Product.objects.filter(vendor=vendor, status='ACTIVE').update(status='PENDING')
             
             Notification.objects.create(
                 user=vendor,
@@ -327,6 +326,11 @@ def resolve_dispute(request, order_id):
 @login_required
 def checkout_step1(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    
+    if product.status != 'ACTIVE':
+        return render(request, '404.html', {
+            'reason': 'This product is pending verification or currently inactive and cannot be purchased.'
+        }, status=403)
     
     # 1. Critical Key Check
     if not product.vendor.xmr_multisig_pubkey:

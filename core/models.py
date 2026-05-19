@@ -87,6 +87,13 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     image_url = models.URLField(max_length=500, blank=True)
     
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending Verification'),
+        ('ACTIVE', 'Active / Online'),
+        ('SUSPENDED', 'Suspended'),
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE', db_index=True)
+    
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

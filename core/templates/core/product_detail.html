@@ -29,6 +29,20 @@
 </div>
 
 <!-- Main Content Area -->
+{% if product.status != 'ACTIVE' %}
+<div class="bg-market-warningBg border-b border-market-warning/30 p-4 px-6 flex items-center justify-between gap-4 shrink-0">
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-market-warning/20 flex items-center justify-center rounded-full shrink-0 border border-market-warning/40">
+            <svg class="w-5 h-5 text-market-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.73 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <div class="space-y-0.5">
+            <h3 class="text-xs text-market-warning uppercase tracking-widest font-bold">Pending Verification / Offline</h3>
+            <p class="text-xs text-market-muted">This product is currently pending moderator verification or inactive. It is not visible in the public catalog and cannot be purchased.</p>
+        </div>
+    </div>
+    <span class="text-[10px] uppercase tracking-widest bg-market-warning text-market-warningBg px-3 py-1 font-bold rounded">Preview Mode</span>
+</div>
+{% endif %}
 <main class="flex flex-col lg:flex-row flex-grow overflow-hidden">
     
     <!-- Left Column: Media & Description -->
@@ -197,9 +211,15 @@
                 </div>
 
                 <div class="flex gap-2">
+                    {% if product.status == 'ACTIVE' %}
                     <a href="{% url 'checkout_step1' product.id %}" class="flex-grow bg-market-text text-market-bg hover:bg-white font-medium px-4 py-3 transition-colors text-[13px] uppercase tracking-wider text-center flex items-center justify-center">
                         Purchase {% if product.is_escrow %}(Escrow){% endif %}
                     </a>
+                    {% else %}
+                    <div class="flex-grow bg-market-surface text-market-muted font-medium px-4 py-3 text-[13px] uppercase tracking-wider text-center flex items-center justify-center cursor-not-allowed border border-market-border">
+                        Unavailable (Pending Verification)
+                    </div>
+                    {% endif %}
                     <button id="bookmark-btn" onclick="toggleBookmark({{ product.id }})" class="border border-market-border hover:border-market-text text-market-text px-4 py-3 transition-colors {% if is_bookmarked %}bg-market-text !text-market-bg{% endif %}">
                         ★
                     </button>
