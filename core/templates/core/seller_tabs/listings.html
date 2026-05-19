@@ -182,7 +182,6 @@
         </div>
         
         <div class="p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
-            {% filter length %}{% set rej_found = False %}{% for p in my_products %}{% if p.status == 'REJECTED' or p.status == 'SUSPENDED' or p.status == 'FIX_REQUIRED' %}{% set rej_found = True %}{% endif %}{% endfor %}{% endfilter %}
             {% for p in my_products %}
             {% if p.status == 'REJECTED' or p.status == 'SUSPENDED' or p.status == 'FIX_REQUIRED' %}
             <div class="bg-market-bg border border-market-border p-5 rounded-xl space-y-3 shadow">
